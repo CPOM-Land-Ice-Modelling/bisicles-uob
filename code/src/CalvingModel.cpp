@@ -1347,8 +1347,19 @@ VonMisesCalvingModel::getCalvingVel
 	{
 	  v.mult(vonmises[dit], 0, dir, 1);
 	  v.mult(scale[dit], 0, dir, 1);
+	  
+	  // \todo fix this, just a test. avoid -v > 2u
+	  for (BoxIterator bit(v.box()); bit.ok(); ++bit)
+	  {
+		const IntVect& iv = bit();
+		if (Abs(v(iv,dir)) > 2.0*Abs(u(iv,dir)))
+		{
+			v(iv,dir) = 2.0*u(iv,dir);
+		}
+	  }	  
 	}	
 	v *= -1; // opposing direction
+      
 				
     }
   
