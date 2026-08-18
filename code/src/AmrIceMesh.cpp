@@ -570,7 +570,7 @@ AmrIce::regrid()
 	// this is a good time to check for remote ice
 	if ((m_eliminate_remote_ice_after_regrid) 
 	    && !(m_eliminate_remote_ice))
-	  eliminateRemoteIce();
+	  eliminateRemoteIce(CalvingModel::PostRegrid);
       
 	//applyCalvingCriterion(CalvingModel::PostRegrid);
 

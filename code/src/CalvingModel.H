@@ -25,7 +25,7 @@ class CalvingModel
 
 public:
 
-  enum Stage { Initialization, PostVelocitySolve, PostThicknessAdvection, PostRegrid, MAX_STAGE};
+  enum Stage { Initialization, PreVelocitySolve, PostVelocitySolve, PostThicknessAdvection, PostRegrid, MAX_STAGE};
 
   static void updateCalvedIce(const Real& a_thck, const Real a_prevThck, const int a_mask, Real& a_added, Real& a_calved, Real& a_removed);
 

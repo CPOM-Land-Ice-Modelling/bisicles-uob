@@ -65,7 +65,7 @@ class AMRMelange
   int m_time_step;
   Real m_time;
   Real m_diffusion_factor;
-  
+  bool m_defined;
   /// cell-centered melange 
   //Vector<LevelData<FArrayBox>*> m_melange;
   /// AMR mesh hierarchy
@@ -74,6 +74,7 @@ class AMRMelange
   Vector<int> m_ratio;
   Vector<RealVect> m_dx;
   SurfaceFlux* m_external_source;
+  int m_increment_method;
 
 public:
   ~AMRMelange();
@@ -84,6 +85,9 @@ public:
   {
     return m_finestLevel;
   }
+  
+  bool defined(){return m_defined;}
+  
   void define(const Vector<DisjointBoxLayout>& a_grids, 
 	      const Vector<int>& a_ratio,
 	      int a_finestLevel,
@@ -144,7 +148,8 @@ private:
 class MelangeIceObserver : public AmrIce::Observer 
 {
   AMRMelange* m_melangePtr;
-  bool  m_next_increment_positive; //used to make sure that m_melangePtr->increment calls occur in pairs
+  bool m_begin;
+  bool m_next_increment_positive; //used to make sure that m_melangePtr->increment calls occur in pairs
   
 public:
 

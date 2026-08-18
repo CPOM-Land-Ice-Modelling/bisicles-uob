@@ -24,10 +24,11 @@
 #include "CH_HDF5.H"
 #include "IceConstants.H"
 #include "BiCGStabSolver.H"
+#include "computeSum.H"
 #include "NamespaceHeader.H"
 
 MelangeIceObserver::MelangeIceObserver()
-  : m_melangePtr( new AMRMelange() ),  m_next_increment_positive(true)
+  : m_melangePtr( new AMRMelange() ),  m_next_increment_positive(true), m_begin(false)
 {
 }
 
@@ -56,28 +57,34 @@ void MelangeIceObserver::notify(AmrIce::Observer::Notification a_n, AmrIce& a_am
 
   pout() <<  "MelangeIceObserver::notify(" << a_n << ")" << std::endl;
 
-  if (a_n == AmrIce::Observer::PreVelocitySolve)
+  if ((a_n == AmrIce::Observer::PreTimeStep))
     {
+      m_begin = true; // don't start recording until we are time stepping (i.e ignore 'calving' before that)
       m_melangePtr->define(a_amrIce.grids(), a_amrIce.refRatios(),  a_amrIce.finestLevel(), a_amrIce.dx(0));
     }
-  else if (a_n == AmrIce::Observer::PostGeometryUpdate)
+  if (m_begin)
     {
-      
-      m_melangePtr->timestep(a_amrIce.dt(), a_amrIce); 
-    }
-  else if (a_n == AmrIce::Observer::PreCalving)
-    {
-      CH_assert(MelangeIceObserver::m_next_increment_positive);
-       m_melangePtr->define(a_amrIce.grids(), a_amrIce.refRatios(),
-			    a_amrIce.finestLevel(), a_amrIce.dx(0));
-      m_next_increment_positive = false;
-      m_melangePtr->increment(a_amrIce, 1.0);
-    }
-  else if (a_n == AmrIce::Observer::PostCalving)
-    {
-      CH_assert(!MelangeIceObserver::m_next_increment_positive);
-      m_next_increment_positive = true;
-      m_melangePtr->increment(a_amrIce, -1.0);
+      if (a_n == AmrIce::Observer::PreVelocitySolve)
+	{
+	  // need to redefine on regrid
+	  m_melangePtr->define(a_amrIce.grids(), a_amrIce.refRatios(),  a_amrIce.finestLevel(), a_amrIce.dx(0));
+	}
+      else if (a_n == AmrIce::Observer::PostTimeStep)
+	{
+	  m_melangePtr->timestep(a_amrIce.dt(), a_amrIce); 
+	}
+      else if (a_n == AmrIce::Observer::PreCalving)
+	{
+	  CH_assert(MelangeIceObserver::m_next_increment_positive);
+	  m_next_increment_positive = false;
+	  m_melangePtr->increment(a_amrIce, 1.0);
+	}
+      else if (a_n == AmrIce::Observer::PostCalving)
+	{
+	  CH_assert(!MelangeIceObserver::m_next_increment_positive);
+	  m_next_increment_positive = true;
+	  m_melangePtr->increment(a_amrIce, -1.0);
+	}
     }
 
 
@@ -90,7 +97,8 @@ void MelangeIceObserver::addPlotVars(Vector<std::string>& a_vars)
 
 void MelangeIceObserver::writePlotData(LevelData<FArrayBox>& a_data, int a_level)
 {
-  m_melangePtr->writePlotData(a_data, a_level);
+  if (m_melangePtr->defined())
+    m_melangePtr->writePlotData(a_data, a_level);
 }
 
 /// fill a_var with the names of variables to add to the checkpoint file 
@@ -102,7 +110,8 @@ void MelangeIceObserver::addCheckVars(Vector<std::string>& a_vars)
 /// copy level a_level checkpoint data to  LevelData<FArrayBox>& a_data
 void MelangeIceObserver::writeCheckData(HDF5Handle& a_handle, int a_level)
 {
-  m_melangePtr->writeCheckData(a_handle, a_level);
+  if (m_melangePtr->defined())
+    m_melangePtr->writeCheckData(a_handle, a_level);
 }
   
 /// read level a_level checkpoint data from  LevelData<FArrayBox>& a_data
@@ -136,6 +145,7 @@ AMRMelange::AMRMelange()
 {
   m_time_step = 0;
   m_time = 0.0;
+  m_defined = false;
 
   m_external_source = SurfaceFlux::parse("melange_model.external_source");
   if (m_external_source == NULL)
@@ -145,10 +155,13 @@ AMRMelange::AMRMelange()
 
 
   ParmParse pp( "melange_model" );
-
   
   m_diffusion_factor = 0.0;
   pp.query("diffusion_factor", m_diffusion_factor);
+
+  m_increment_method = 1; //
+  pp.query("increment_method", m_increment_method);
+  
   
 }
 
@@ -290,20 +303,24 @@ void AMRMelange::define
 
     }
 
+  m_defined = true;
+
 }
 
 void AMRMelange::increment(AmrIce& a_amrIce, Real a_scale)
 {
-  pout() <<  "AMRMelange::increment ice thickness * " << a_scale << std::endl;
-  for (int lev=0; lev<= m_finestLevel; lev++)
+  if (m_increment_method == 0)
     {
-      const LevelData<FArrayBox>& iceThickness = a_amrIce.geometry(lev)->getH();
-      for (DataIterator dit(m_grids[lev]); dit.ok(); ++dit)
+      pout() <<  "AMRMelange::increment ice thickness * " << a_scale << std::endl;
+      for (int lev=0; lev<= m_finestLevel; lev++)
 	{
-	  (*m_melange[lev])[dit].plus( iceThickness[dit], a_scale);
+	  const LevelData<FArrayBox>& iceThickness = a_amrIce.geometry(lev)->getH();
+	  for (DataIterator dit(m_grids[lev]); dit.ok(); ++dit)
+	    {
+	      (*m_melange[lev])[dit].plus( iceThickness[dit], a_scale);
+	    }
 	}
     }
-  
 }
 
 
@@ -361,9 +378,12 @@ void AMRMelange::timestep(Real a_dt, AmrIce& a_amrIce)
 ///Compute the source part of equation dM/dt + div( - k grad M ) = source.
 /**
    The major source of melange will be calving from the ice sheet, which
-   is accounted for through calls to AMRMelange::increment. The major sink
-   will be user supplied, for example the UKESM ice-ocean coupler will
-   provide a sink to mathc the ocean model's iceberg or freshwater sources
+   is accounted for through either
+     (0) calls to AMRMelange::increment.
+     (1) reading a_amrIce->calvedIceThickness (which is reset on each timestep)
+   according to the value of m_increment_method
+   The major sink will be user supplied, for example the UKESM ice-ocean coupler will
+   provide a sink to match the ocean model's iceberg or freshwater sources
 
 */
 void AMRMelange::computeSource(Vector<LevelData<FArrayBox>* >& a_source,
@@ -375,6 +395,37 @@ void AMRMelange::computeSource(Vector<LevelData<FArrayBox>* >& a_source,
       m_external_source->evaluate(*a_source[lev], a_amrIce, lev, a_dt);
     }
   
+  Real sumSrc = computeSum(a_source, m_ratio, m_dx[0][0] , Interval(0,0), 0);
+  pout() <<  "AMRMelange::computeSource: external source vol*dt =  "
+	 << std::setprecision(6)  << std::scientific 
+	 << sumSrc*a_dt << std::endl;
+  
+  
+  if (m_increment_method == 1)
+    {
+      // using calved ice thicness as a source, rather than rely on
+      // AMRMelange::increment
+      for (int lev=0; lev <= m_finestLevel ; ++lev)
+	{
+	   for (DataIterator dit(m_grids[lev]); dit.ok(); ++dit)
+	     {
+	       FArrayBox& src = (*a_source[lev])[dit];
+	       const FArrayBox& calved_h = (*a_amrIce.calvedIceThickness()[lev])[dit];
+	       FArrayBox calving_flux(src.box(), 1);
+	       calving_flux.copy(calved_h);
+	       calving_flux *= (1.0 / a_dt);
+	       src += calving_flux;
+	     }
+	}
+      Real sumCalv = computeSum(a_source, m_ratio, m_dx[0][0], Interval(0,0), 0) - sumSrc;
+      pout() <<  "AMRMelange::computeSource: AmrIce calving source vol * dt =  "
+	     << std::setprecision(6)  << std::scientific << sumCalv * a_dt << std::endl;
+      sumSrc += sumCalv;
+    }
+  
+  pout() <<  "AMRMelange::computeSource: total source vol*dt =  "
+	 << std::setprecision(6)  << std::scientific 
+	 << sumSrc*a_dt << std::endl;
 }
 
 

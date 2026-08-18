@@ -767,8 +767,9 @@ protected:
 
   // remove ice that calves according to a criterion
   void applyCalvingCriterion(CalvingModel::Stage a_stage);
-  
-  void eliminateRemoteIce();
+
+  // seek and destroy floating ice not connected to grounded ice.
+  void eliminateRemoteIce(CalvingModel::Stage a_stage);
 
   /// solve a_alpha * phi - a_beta * laplacian(phi) = a_rhs
   /// and grad(phi).n = 0 on the domain boundaries
@@ -1528,7 +1529,7 @@ public:
 
   public:
 
-    enum Notification {PostInitGrids,PreVelocitySolve,PostVelocitySolve,PostGeometryUpdate,PreCalving,PostCalving};
+    enum Notification {PostInitGrids,PreVelocitySolve,PostVelocitySolve,PostGeometryUpdate,PreCalving,PostCalving,PreTimeStep,PostTimeStep};
     
     virtual ~Observer()
     {
