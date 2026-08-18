@@ -729,7 +729,7 @@ CompositeCalvingModel::applyCriterion(LevelData<FArrayBox>& a_thickness,
     }
 }
 
-//alter the thickness field at the end of a time step
+//calving rate (scalar)
 void 
 CompositeCalvingModel::getCalvingRate(LevelData<FArrayBox>& a_rate, 
 				      const AmrIce& a_amrIce,int a_level)
@@ -747,7 +747,33 @@ CompositeCalvingModel::getCalvingRate(LevelData<FArrayBox>& a_rate,
     }
 }
 
-  
+bool 
+CompositeCalvingModel::getCalvingVel
+(LevelData<FArrayBox>& a_centreCalvingVel,
+ const LevelData<FArrayBox>& a_centreIceVel,
+ const DisjointBoxLayout& a_grids,
+ const AmrIce& a_amrIce,int a_level)
+{
+  bool s = m_vectModels[0]->getCalvingVel(a_centreCalvingVel, a_centreIceVel,
+					  a_grids, a_amrIce, a_level);
+  int n = 1;
+  LevelData<FArrayBox> tmp(a_grids,SpaceDim,a_centreCalvingVel.ghostVect());
+  while (s);
+  {
+    s = m_vectModels[n]->getCalvingVel(tmp, a_centreIceVel,
+				       a_grids, a_amrIce, a_level);
+    if (s)
+      {
+	for (DataIterator dit(a_grids); dit.ok(); ++dit)
+	  {
+	    a_centreCalvingVel[dit] += tmp[dit];
+	  }
+      }
+    n++;
+  }
+  return s;
+}
+ 
 CompositeCalvingModel::~CompositeCalvingModel()
 {
   for (int n=0; n<m_vectModels.size(); n++)
