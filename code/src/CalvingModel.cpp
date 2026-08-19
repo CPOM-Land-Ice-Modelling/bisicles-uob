@@ -758,7 +758,7 @@ CompositeCalvingModel::getCalvingVel
 					  a_grids, a_amrIce, a_level);
   int n = 1;
   LevelData<FArrayBox> tmp(a_grids,SpaceDim,a_centreCalvingVel.ghostVect());
-  while (s)
+  while ((s) && (n <  m_vectModels.size()))
   {
     s = m_vectModels[n]->getCalvingVel(tmp, a_centreIceVel,
 				       a_grids, a_amrIce, a_level);
