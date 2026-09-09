@@ -3392,7 +3392,7 @@ AmrIce::initData(Vector<RefCountedPtr<LevelSigmaCS> >& a_vectCoordSys,
     Real vol = computeSum(h,m_refinement_ratios, m_amrDx[0],Interval(0,0),0);
    for (int lev = 0; lev <= m_finest_level; lev++)
 	{
-	  if (vol > -1.0e-10)
+	  if (vol > 1.0e-10)
 	  {
 		  setIceFrac(m_vect_coordSys[lev]->getH(), lev);
 	  }
