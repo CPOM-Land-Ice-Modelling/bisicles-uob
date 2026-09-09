@@ -3366,9 +3366,9 @@ AmrIce::initData(Vector<RefCountedPtr<LevelSigmaCS> >& a_vectCoordSys,
 
 
 
-      const LevelData<FArrayBox>& levelThickness = m_vect_coordSys[lev]->getH();
-      setIceFrac(levelThickness, lev);
-      a_vectCoordSys[lev]->recomputeGeometry(crsePtr, refRatio);
+      //const LevelData<FArrayBox>& levelThickness = m_vect_coordSys[lev]->getH();
+      //setIceFrac(levelThickness, lev);
+      //a_vectCoordSys[lev]->recomputeGeometry(crsePtr, refRatio);
 
       // initialize oldH to be the current value
       LevelData<FArrayBox>& currentH = a_vectCoordSys[lev]->getH();
@@ -3382,6 +3382,22 @@ AmrIce::initData(Vector<RefCountedPtr<LevelSigmaCS> >& a_vectCoordSys,
 #endif
      
     }
+
+   // initialize the ice fraction - 1 for thk > 0, 0 o/w, OR 1 for topg > 0 if whole domain is ice free
+   Real vol = computeSum(m_old_thickness,m_refinement_ratios, m_amrDx[0],Interval(0,0),0);
+   for (int lev = 0; lev <= m_finest_level; lev++)
+	{
+	  if (vol > 1.0e-10)
+	  {
+		  setIceFrac(m_vect_coordSys[lev]->getH(), lev);
+	  }
+	  else
+	  {
+		  setIceFrac(m_vect_coordSys[lev]->getTopography(), lev);
+	  }
+	}	  
+
+
   // tempearture depends on internal energy
   updateTemperature();
 
@@ -4080,8 +4096,10 @@ AmrIce::updateCoordSysWithNewThickness(const Vector<LevelData<FArrayBox>* >& a_t
     } // end loop over levels      
 }
 
+
+
 void
-AmrIce::setIceFrac(const LevelData<FArrayBox>& a_thickness, int a_level)
+AmrIce::setIceFrac(const LevelData<FArrayBox>& a_thickness,  int a_level)
 {
   // initialize fraction to 1 if H>0, 0 o/w...
   DataIterator dit = m_iceFrac[a_level]->dataIterator();
@@ -4785,8 +4803,10 @@ AmrIce::computeDt()
 {
   if (m_fixed_dt > TIME_EPS)
     return m_fixed_dt;
-
-  return computeDtCFL();
+  Real max_dt = 1.2345678e+300;
+  ParmParse pp("amr");
+  pp.query("max_dt", max_dt); 
+  return std::min(max_dt, computeDtCFL());
 }
 
 // compute CFL timestep
