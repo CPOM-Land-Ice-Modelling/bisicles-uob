@@ -2138,6 +2138,9 @@ AmrIce::timeStep2(Real a_dt)
              << m_time << " ( " << time() << ")" " with dt = " << a_dt << endl;
     }
   m_dt = a_dt;
+
+  notifyObservers(Observer::PreTimeStep);
+  
   Real init_time = m_time;
   Real final_time = m_time + a_dt;
   Real inter_time = m_time + 0.5 * a_dt;
@@ -2290,6 +2293,9 @@ AmrIce::timeStep2(Real a_dt)
       if (fc[lev] != NULL){delete fc[lev]; fc[lev] = NULL;}
       if (fp[lev] != NULL){delete fp[lev]; fp[lev] = NULL;}
     }
+
+  notifyObservers(Observer::PostTimeStep);
+  
 }
 
 void
@@ -2441,6 +2447,9 @@ AmrIce::timeStep(Real a_dt)
 
   m_dt = a_dt;
 
+
+  notifyObservers(Observer::PreTimeStep);
+  
   // assuming that we've already computed the current velocity 
   // field, most likely at initialization or at the end of the last timestep...
   // so, we don't need to recompute the velocity at the start.
@@ -2625,6 +2634,9 @@ AmrIce::timeStep(Real a_dt)
                   << m_num_cells[lev] << endl;
         }
     }
+
+  notifyObservers(Observer::PostTimeStep);
+  
 }
 
 void de_nan(FArrayBox& a)
@@ -3377,7 +3389,7 @@ AmrIce::initData(Vector<RefCountedPtr<LevelSigmaCS> >& a_vectCoordSys,
   // (don't bother if we're doing it as a matter of course, since we'd
   // wind up doing it 2x)
   if ((m_eliminate_remote_ice_after_regrid) && !(m_eliminate_remote_ice))
-    eliminateRemoteIce();
+    eliminateRemoteIce(CalvingModel::Initialization);
   
   setToZero(m_deltaTopography);
 
@@ -3426,7 +3438,7 @@ AmrIce::solveVelocityField(bool a_forceSolve, Real a_convergenceMetric)
   notifyObservers(Observer::PreVelocitySolve);
 
   if (m_eliminate_remote_ice)
-    eliminateRemoteIce();
+    eliminateRemoteIce(CalvingModel::PreVelocitySolve);
 
   //ensure A is up to date
 #if BISICLES_Z == BISICLES_LAYERED
@@ -5459,7 +5471,7 @@ void AmrIce::applyCalvingCriterion(CalvingModel::Stage a_stage)
     notifyObservers(Observer::PostCalving);
   
   // usually a good time to eliminate remote ice
-  if (m_eliminate_remote_ice) eliminateRemoteIce();
+  if (m_eliminate_remote_ice) eliminateRemoteIce(a_stage);
 
 
 
@@ -5469,11 +5481,12 @@ void AmrIce::applyCalvingCriterion(CalvingModel::Stage a_stage)
 
 ///Identify regions of floating ice that are remote
 ///from grounded ice and eliminate them.
-void AmrIce::eliminateRemoteIce()
+void AmrIce::eliminateRemoteIce(CalvingModel::Stage a_stage)
 {
   
   //any thickness change in eliminateRemoteIce is assumed to be calving: observers may care
-  notifyObservers(Observer::PreCalving);
+  if (a_stage != CalvingModel::Initialization)
+    notifyObservers(Observer::PreCalving);
  
   Real calved_volume_0 = computeSum(m_calvedIceThickness,  m_refinement_ratios,
 			       m_amrDx[0], Interval(0,0), 0);
@@ -5499,7 +5512,8 @@ void AmrIce::eliminateRemoteIce()
     }
  
   //any thickness change in eliminateRemoteIce is assumed to be calving: observers may care
-  notifyObservers(Observer::PostCalving);
+  if (a_stage != CalvingModel::Initialization)
+    notifyObservers(Observer::PostCalving);
   
 }
 
