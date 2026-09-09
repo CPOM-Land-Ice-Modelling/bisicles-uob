@@ -3384,10 +3384,15 @@ AmrIce::initData(Vector<RefCountedPtr<LevelSigmaCS> >& a_vectCoordSys,
     }
 
    // initialize the ice fraction - 1 for thk > 0, 0 o/w, OR 1 for topg > 0 if whole domain is ice free
-   Real vol = computeSum(m_old_thickness,m_refinement_ratios, m_amrDx[0],Interval(0,0),0);
+   Vector<LevelData<FArrayBox>*> h(m_finest_level+1, NULL);   
+   for (int lev = 0; lev <= m_finest_level; lev++)
+   {
+	   h[lev] = m_old_thickness[lev];
+   }
+    Real vol = computeSum(h,m_refinement_ratios, m_amrDx[0],Interval(0,0),0);
    for (int lev = 0; lev <= m_finest_level; lev++)
 	{
-	  if (vol > 1.0e-10)
+	  if (vol > -1.0e-10)
 	  {
 		  setIceFrac(m_vect_coordSys[lev]->getH(), lev);
 	  }
