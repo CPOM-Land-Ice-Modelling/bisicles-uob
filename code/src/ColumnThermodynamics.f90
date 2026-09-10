@@ -459,7 +459,7 @@ subroutine column_thermodynamics_update_internal_energy(energy, tillwaterdepth, 
   integer l,nt,it,i,npicard,ipicard
   
 
-  if (thcknew.gt.1.0d0 .and. thckold.gt.1.0d0) then
+  if (thcknew.gt.25.0d0 .and. thckold.gt.25.0d0) then
      
      do i = 1,n
         csig(i) = 0.5*(fsig(i+1)+fsig(i))
@@ -515,7 +515,7 @@ subroutine column_thermodynamics_update_internal_energy(energy, tillwaterdepth, 
      end do
   else
      !no ice
-     senergy = max(senergy, shci*(trpt - temp_eps - 0.0))
+     senergy = min(senergy, shci*(trpt - temp_eps - 0.0))
      if (sdiric) then
         sflux = bflux
      end if
