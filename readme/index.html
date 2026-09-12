@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Generic instructions - BISICLES user documents</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Generic instructions";
+        var mkdocs_page_input_path = "readme.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c++.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> BISICLES user documents
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Building and running</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Generic instructions</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#system-requirements">System requirements</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#check-out-the-source-code">Check out the source code</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#chombo-configuration">Chombo configuration</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#bisicles-configuration">BISICLES configuration</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#building-basic-bisicles">Building basic BISICLES</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#running-bisicles-on-a-simple-problem">Running BISICLES on a simple problem</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#build-all-of-bisicles">Build all of BISICLES</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../sites/">Site notes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../trouble/">Common issues</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Executables</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../driver/">Main program (driver)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../filetools/">File tools</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cdriver/">C/Fortran API</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Run time options</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../io/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../geometry/">Ice sheet geometry</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../stress/">Stresses</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../thermodynamics/">Thermodynamics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../velocity/">Ice velocity</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../surfaceflux/">Surface fluxes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../leveldatainterface/">LevelData interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pythoninterface/">Python interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="../readme.md#running-bisicles-on-a-simple-problem">MISMIP3D</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineisland/">Pine Island Glacier</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineislandinverse/">PIG inverse problem</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Data viz / analysis</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../libamrfile/">Python/R/MATLAB (libamrfile)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../visit/">VisIt</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">BISICLES user documents</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Building and running</li>
+      <li class="breadcrumb-item active">Generic instructions</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="bisicles-build-instructions">BISICLES build instructions</h1>
+<p>To build (and run) BISICLES you need to</p>
+<ol>
+<li>Meet the <a href="#system-requirements">system requirements</a></li>
+<li><a href="./#check-out-the-source-code">Check out</a> the source code</li>
+<li>Set up some third party <a href="#dependencies">dependencies</a></li>
+<li><a href="#chombo-configuration">Configure Chombo</a> by editing some definitions in a
+    makefile</li>
+<li><a href="#bisicles-configuration">Configure BISICLES</a> additional options by editing some
+    definitions in another makefile</li>
+<li><a href="#building-basic-bisicles">Compile driver</a>, the main standalone BISICLES
+    executable.</li>
+<li><a href="mismip3d.md">Run driver on a simple problem</a> to ensure that it works</li>
+<li><a href="#build-all-of-bisicles">Build all of BISICLES</a>: pre-processing and post processing tools, etc. </li>
+</ol>
+<h2 id="system-requirements">System requirements</h2>
+<p>BISICLES requires the GNU/Linux operating system (actually, it should
+compile and run elsewhere, but we never do that), plus both C++ and
+FORTRAN compilers, a GNU-compatible make, subversion, and Perl. Python
+is optional but highly recommended - BISICLES has numerous optional
+python components. On the whole, life is easiest with gcc (including g++
+and gfortran), and we shall assume that is what will be used. To build
+the parallel version, you need an MPI environment, which provides the
+mpicc and mpicxx (or equivalents). </p>
+<p>You will also need
+<a href="https://visit-dav.github.io/visit-website/index.html">VisIt</a> to view the data BISICLES produces (other programs can be put to use,
+but VisIt is by far the most convenient)</p>
+<p>There are some <a href="../sites/">site specific notes</a>: look at these before
+proceeding if you are installing on an Ubuntu or Debian workstation, on
+a Cray (e.g ARCHER, NERSC), or on any of the other machines that
+BISICLES has been used before.</p>
+<h2 id="check-out-the-source-code">Check out the source code</h2>
+<p>Since this readme file lives in the source code repository, you might
+have already checked the source code out. There are two source trees,
+Chombo, and BISICLES, and the rest of this guide assumes that you have a
+directory called  $BISICLES_HOME which contains the two.</p>
+<p>Create a root directory for both source trees</p>
+<pre><code>  &gt; export BISICLES_HOME=/wherever/you/like #assumes bash...
+  &gt; mkdir -p $BISICLES_HOME
+  &gt; cd $BISICLES_HOME
+</code></pre>
+<p>Then obtain a Chombo source tree.</p>
+<pre><code>git clone https://github.com/applied-numerical-algorithms-group-lbnl/Chombo_3.2.git Chombo
+</code></pre>
+<p>Next, decide which BISICLES branch you want. Users will want the main
+BISICLES development branch (trunk),which is fairly stable since
+experimental code is developed on other branches. In that case run</p>
+<pre><code>  &gt; git clone -b master https://github.com/ggslc/bisicles-uob BISICLES
+</code></pre>
+<p>You may want one of the other branches, especially if you are working
+with any of the BISICLES developers to introduce new features, but in
+that case you will probably know which one you need.</p>
+<p>Note that you do not need to layout your source directories as indicated
+above, or even follow the rest of these notes exactly. If you want some
+other layout, note the following</p>
+<ul>
+<li>Chombo needs to know where your hdf5 includes and libraries are to
+    be found. It expects these to be defined in variables HDFINCFLAGS ,
+    HDFLIBFLAGS , HDFMPIINCFLAGS, HDFMPILIBFLAGS, which are read from a
+    file <code>/path/to/Chombo/lib/mk/Make.defs.local</code>, which you must
+    create.</li>
+<li>Chombo will determine the location of PETSc (if needed) from the
+    PETSC_DIR environment variable</li>
+<li>BISICLES needs to know where the Chombo includes and libraries are
+    to be found (and possibly the same for python and netcdf). By
+    default it assumes that there is a <code>Chombo</code> source tree at the same
+    level as the BISICLES source tree, but this can be overridden by
+    setting the environment variable <code>$CHOMBO_HOME</code>. e.g if you have
+    Chombo in <code>/path/to/Chombo/3.2</code> then set
+    <code>CHOMBO_HOME=/path/to/Chombo/3.2/lib</code></li>
+<li>BISICLES may need to know where python and netcdf includes and
+    libraries are to be found, these are defined in
+    <code>/path/to/BISICLES/code/mk/Make.defs</code> (as is <code>$CHOMBO_HOME</code>) which
+    may attempt to read them from a file called
+    <code>/path/to/BISICLES/code/mk/Make.defs.$UNAMEN</code>, where <code>$UNAME</code> is the
+    output from <code>uname -n</code> or <code>Make.defs.none</code> if there is no such file.</li>
+</ul>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li><strong>fftw:</strong> Some optional components (e.g the BuelerGIA module
+    contributed by Sam Kachuck) require <a href="https://fftw.org">fftw</a>. Most
+    operating systems will allow you to install this in a sensible
+    fashion. You need to know where it is installed - often /usr</li>
+<li><strong>hdf5:</strong> Chombo requires the hdf5 libraries.</li>
+<li><strong>petsc:</strong> Chombo 3.2 also contains an optional interface to the
+    <a href="http://www.mcs.anl.gov/petsc/">PETSc</a> solver library. We have found
+    that using the Chombo AMR interface to the petsc algebraic multigrid
+    solvers (either GAMG or Hypre 's BoomerAMG) can substantially
+    improve the performance of the nonlinear ice velocity solve for
+    problems where the native Chombo geometric multigrid (GMG) solvers
+    struggle.</li>
+<li><strong>netcdf:</strong> BISICLES includes some complementary tools which require
+    netcdf, and can be linked with the Glimmer-CISM model, which also
+    requires netcdf. As with hdf5, there may be a suitable version
+    installed on your system but you may need to compile netCDF from
+    source.</li>
+<li><strong>python:</strong> BISICLES has an optional python interface</li>
+<li><strong>gdal:</strong> used by the complentary flatten tool to add projcetion
+    data to output files</li>
+</ul>
+<p>If you 're working on a system which is maintained by somebody else
+(like, for example, the supercomputers at NERSC), it 's likely that
+most, if not all, of these dependencies have been built and installed
+already, which can save you some effort. So, check to see what 's
+already installed, with an eye open to the possibility that things have
+been configured in some odd way which makes them unusable for us, in
+which case you you 're back to where you were anyway). See the <a href="../sites/">site
+specific notes</a>, because certain common environments, such
+as the Cray XC30/40, and recent versions of Debian and Ubuntu GNU/Linux,
+have well designed systems for satisfying some of these dependencies,
+notably fftw, hdf5 and netcdf. <strong>Do not follow the instructions below
+for hdf5 and netcdf on those machines, instead follow the much simpler
+instructions in the <a href="../sites/">site specific notes</a></strong></p>
+<p>There should be a script, download_dependencies.sh (in the same
+directory as this file,  $BISICLES_HOME/BISICLES/docs) that will get the
+(version 1.10.10) hdf5 sources and unpack them, twice : once into
+hdf5/serial/src and once into hdf5/parallel/src. It assumes
+ $BISICLES_HOME is set. It should contain the following</p>
+<pre><code>cd $BISICLES_HOME
+echo `pwd`
+
+#get hdf5 sources
+if !(test -e hdf5-1.10.10.tar.bz2) then
+    echo "downloading hdf5-1.10.9.tar.gz"
+    wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.10/src/hdf5-1.10.10.tar.bz2
+fi
+
+mkdir -p hdf5/parallel/src
+tar -jxf  hdf5-1.10.10.tar.bz2 -C hdf5/parallel/src
+
+mkdir -p hdf5/serial/src
+tar -jxf  hdf5-1.10.10.tar.bz2 -C hdf5/serial/src
+
+
+#get netcdf sources
+
+if !(test -e netcdf-c-4.9.2.tar.gz) then
+    echo "downloading netcdf-4.9.2.tar.gz"
+    wget https://downloads.unidata.ucar.edu/netcdf-c/4.9.2/netcdf-c-4.9.2.tar.gz
+fi
+mkdir -p netcdf/parallel/src
+tar -zxf netcdf-c-4.9.2.tar.gz -C netcdf/parallel/src
+
+mkdir -p netcdf/serial/src
+tar -zxf netcdf-c-4.9.2.tar.gz -C netcdf/serial/src
+</code></pre>
+<p>If you want to build a single-processor BISICLES, then build hdf5 in
+hdf5/serial/src. If you want to build a multi-processor BISICLES, then
+build hdf5 in hdf5/parallel/src. Similar pairs of directories will be
+built for netcdf.</p>
+<h3 id="building-serial-hdf5">Building serial hdf5</h3>
+<p>Before starting, make sure that you can run gcc. Enter the appropriate
+source directory</p>
+<pre><code>&gt; cd $BISICLES_HOME/hdf5/serial/src/hdf5-1.10.10/
+</code></pre>
+<p>and configure hdf5 like so</p>
+<pre><code>CC=gcc CFLAGS=-fPIC ./configure --prefix=$BISICLES_HOME/hdf5/serial/
+</code></pre>
+<p>The -fPIC flag will be useful later if you want to build the
+experimental <a href="../libamrfile/">libamrfile</a> shared library that can be
+used to manipulate Chombo (and BISICLES) output with languages that
+support a plain C function calling convention, like FORTRAN 90, GNU R,
+Python and MATLAB. Configure will spit out a long list of tests, and
+hopefully pass them all. Don 't worry that the C++ and Fortran languages
+are not enabled : Chombo uses the C interface, and (when we come to
+compile that too), so does netcdf. Assuming this is all OK, type</p>
+<pre><code>&gt; make install
+</code></pre>
+<p>and you, after a round of compiling and copying, you should see that the
+hdf5 libraries bin,doc,include and src have appeared in
+ $BISICLES_HOME/hdf5/serial/.</p>
+<h3 id="building-parallel-hdf5">Building parallel hdf5</h3>
+<p>Before starting, make sure that the mpi environment is in place and that
+you can run mpicc. Enter hdf5/parallel/src/hdf5-1.10.10/ directory</p>
+<pre><code>&gt; cd $BISICLES_HOME/hdf5/parallel/src/hdf5-1.10.10/
+</code></pre>
+<p>and configure hdf5, this time enabling MPI through the use of mpicc in
+place of gcc</p>
+<pre><code>&gt; CC=mpicc ./configure --prefix=$BISICLES_HOME/hdf5/parallel/ --enable-parallel=yes
+</code></pre>
+<p>This time, configure 's final report should the line  'Parallel HDF5:
+mpicc  ' Assuming this is all OK, type</p>
+<pre><code>&gt; make install
+</code></pre>
+<p>this time, the bin,doc,include and src directories should end up in
+ $BISICLES_HOME/hdf5/parallel/.</p>
+<h3 id="building-serial-netcdf">Building serial netcdf</h3>
+<p><strong>The main BISICLES program does not need netcdf: you only need it to
+convert between hdf5 (which BISICLES reads and write) and netcdf formats
+(which are popular in climate modelling). If you have problems with
+this, move on.</strong> Before starting, make sure that you can run gcc,g++ and
+gfortran. Enter the appropriate source directory</p>
+<pre><code>    &gt; cd $BISICLES_HOME/netcdf/serial/src/netcdf-c-4.9.2/
+</code></pre>
+<p>Now, netcdf needs to link hdf5 : it doesn 't really matter which version
+but we might as well use the one we have. So, we have a custom configure
+line</p>
+<pre><code>&gt; CC=gcc CPPFLAGS=-I$BISICLES_HOME/hdf5/serial/include/ CXX=g++ FC=gfortran LDFLAGS=-L$BISICLES_HOME/hdf5/serial/lib/  ./configure --prefix=$BISICLES_HOME/netcdf/serial --enable-dap=no
+</code></pre>
+<p>Next, compile, test, and install netcdf</p>
+<pre><code>&gt; make check install
+</code></pre>
+<p>and assuming all goes well, the C API netcdf 4.9.2 will now be installed
+in  $BISICLES_HOME/netcdf/serial.</p>
+<p>Recent versions of netcdf (inclusing 4.9.2) do not include a Fortran
+API. BISICLES does not require this, but related programs might.</p>
+<h3 id="building-parallel-netcdf">Building parallel netcdf</h3>
+<p>So far, the only difference between parallel and serial netcdf installs
+is the link to parallel hdf5 and the use of the MPI compiler wrapper.
+Possibly, building two versions of netcdf is a waste of time.</p>
+<p><strong>parallel netcdf may be needed to compile parallel glimmer-CISM,
+otherwise it can be skipped</strong>.</p>
+<pre><code>&gt; cd $BISICLES_HOME/netcdf/parallel/src/netcdf-4.9.2/
+&gt; CC=mpicc CXX=mpiCC FC=mpif90  CPPFLAGS="-DgFortran -I$BISICLES_HOME/hdf5/parallel/include/" LDFLAGS=-L$BISICLES_HOME/hdf5/parallel/lib/  ./configure --prefix=$BISICLES_HOME/netcdf/parallel --enable-dap=no
+&gt; make  check install
+</code></pre>
+<h3 id="installing-petsc">Installing PETSc</h3>
+<p>If we 're planning to use the PETSc solver interface, it 's a good idea
+to install PETSc before building Chombo. It 's likely that some version
+of petsc may be pre-installed on your system  -- we need petsc version
+3.3.4 or later, configured with hypre. If that is not available, you
+will need to build it.</p>
+<ol>
+<li>
+<p>First, download PETSc:</p>
+<pre><code>&gt; cd $BISICLES_HOME
+&gt; git clone -b release https://gitlab.com/petsc/petsc.git petsc-src
+</code></pre>
+</li>
+<li>
+<p>Configure petsc. To build a parallel version and install it in
+     $BISICLES_HOME/petsc,</p>
+<pre><code>&gt; mkdir -p $BISICLES_HOME/petsc
+&gt; cd $BISICLES_HOME/petsc-src
+&gt; ./configure --download-fblaslapack=yes --download-hypre=yes -with-x=0 --with-c++support=yes --with-mpi=yes --with-hypre=yes --prefix=$BISICLES_HOME/petsc --with-c2md=0 --with-ssl=0
+</code></pre>
+<p>The petsc install system is pretty helpful and will tell you what to
+do if it runs into problems (unlike, say, Chombo)</p>
+</li>
+<li>
+<p>Follow the instructions to make and install the library</p>
+</li>
+<li>
+<p>Finally, set the PETSC_DIR environment variable, which Chombo will
+    use in order to find your PETSc installation. If using bash,</p>
+<pre><code>&gt; export PETSC_DIR=$BISICLES_HOME/petsc
+</code></pre>
+<p>Use setenv rather than export in csh, tcsh etc. These variables need
+to be set whenever you compile against petsc, so consider adding
+them to .bash_profile or .bashrc or the startup script for your
+shell.</p>
+</li>
+</ol>
+<h2 id="chombo-configuration">Chombo configuration</h2>
+<p>Next we need to set up Combo 's configuration (which BISICLES will
+inherit automatically). The main task here is create a file called
+ $BISICLES_HOME/Chombo/lib/mk/Make.defs.local, and there is version
+stored in this directory that should be easy enough to edit. First, copy
+it into  $BISICLES_HOME</p>
+<pre><code>&gt; cp $BISICLES_HOME/BISICLES/docs/Make.defs.local $BISICLES_HOME
+</code></pre>
+<p>At the very least, you will need to edit the line that reads</p>
+<pre><code>BISICLES_HOME=...,
+</code></pre>
+<p>to give the correct value. If you don 't have MPI, there are a few lines
+to comment out. You might also want to tinker with the optimization
+flags and so on. Then create a link so that Chombo sees Make.defs.local
+in the place it expects</p>
+<pre><code>&gt;ln -s $BISICLES_HOME/Make.defs.local $BISICLES_HOME/Chombo/lib/mk/Make.defs.local
+</code></pre>
+<p>If you want the include compenents (e.g BuelerGIA) that require fftw set</p>
+<pre><code>USE_FFTW=TRUE
+#make sure FFTWDIR is correct (contains e.g include/fftw3.h if you set USE_FFTW=TRUE
+FFTWDIR=/path/to/fftw # often /usr
+</code></pre>
+<h2 id="bisicles-configuration">BISICLES configuration</h2>
+<p>A makefile containing options specific to BISICLES (rather than Chombo)
+is located at</p>
+<pre><code>$BISICLES_HOME/BISICLES/code/mk/Make.defs
+</code></pre>
+<p>You do not usually need to edit that file, but instead, add a file named
+for your machine to that directory. Run  'uname -n ' to find out the
+name of you machine, e.g on a host called  'mymachine '</p>
+<pre><code>&gt; cd $BISICLES_HOME/BISICLES/code/mk/
+&gt; uname -n
+mymachine
+&gt; cp Make.defs.template Make.defs.mymachine
+</code></pre>
+<p>Alternatively, create a file called Make.defs.none</p>
+<h3 id="python">Python</h3>
+<p>To make use of the <a href="../pythoninterface/">python interface</a>, you need to
+ensure that you have a suitable python installation. This is usually
+straightforward in modern GNU/linux distributions, since Python is so
+widespread. The aim is to make sure that the the variables PYTHON_INC
+and PYTHON_LIBS are correctly defined. Make.defs.template attempts to
+set these variables by running</p>
+<pre><code>python3-config --includes
+python3-config --libs
+</code></pre>
+<p>which works on many workstations but may not be what you want. In that
+case, you need to find out where the header file  "Python.h " lives, and
+what linker flags you need. For example, edit Make.defs.mymachine to set</p>
+<pre><code>PYTHON_INC=/usr/include/python3.10
+PYTHON_LIBS=-lpython3.10
+</code></pre>
+<p>There are several machine specific examples in the same directory. If
+you do not want the python interface for some reason (we advise having
+it), make sure that PYTHON_INC is not set</p>
+<h3 id="netcdf">NetCDF</h3>
+<p>Netcdf is not needed by the main BISICLES code, but there are tools and
+examples to do depend upon it. The aim is to set the NETCDF_INC and
+NETCDF_LIBS variables in (e.g) Make.defs.mymachine, and once again
+Make.defs.template shows one way to do this if netcdf is installed, by
+running</p>
+<pre><code>nc-config --includedir
+nc-config --libs
+</code></pre>
+<p>If that is not suitable, for example if you built <a href="#cdf">netcdf as
+above</a>, you need to find the location netcdf.h. Edit
+Make.defs.mymachine to set</p>
+<pre><code>NC_CONFIG=$(BISICLES_HOME)/netcdf/serial/bin/nc-config
+HDF_SER_DIR=$(BISICLES_HOME)/hdf5/serial
+NETCDF_HOME=$(shell $(NC_CONFIG) --prefix)
+NETCDF_INC=-I$(shell $(NC_CONFIG) --includedir)
+NETCDF_LIBS=$(shell $(NC_CONFIG) --libs) -Wl,-rpath $(NETCDF_HOME)/lib -lhdf5_hl -lhdf5 -Wl,-rpath $(HDF_SER_DIR)/lib
+</code></pre>
+<h2 id="building-basic-bisicles">Building basic BISICLES</h2>
+<p>Now we are ready to build one or more BISICLES executables. If you plan
+to do development work on the code itself, you will want to build an
+unoptimized version to run in gdb. Run</p>
+<pre><code>&gt; cd $BISICLES_HOME/BISICLES/code/exec2D
+&gt; make all
+</code></pre>
+<p>This will build a set of Chombo libraries, and then BISICLES. Hopefully,
+it will complete without errors, and you will end up with an executable
+called driver2d.Linux.64.g++.gfortran.DEBUG.ex. This one is most useful
+for low-level debugging of the code - if you are not planning to do
+that, there is no need for it. If you have a serial computer only, run</p>
+<pre><code>&gt; cd $BISICLES_HOME/BISICLES/code/exec2D
+&gt; make all OPT=TRUE
+</code></pre>
+<p>to get an optimized executable called
+driver2d.Linux.64.g++.gfortran.DEBUG.OPT.ex.</p>
+<p>An optimized parallel executable
+driver2d.Linux.64.mpic++.gfortran.DEBUG.OPT.MPI.ex can be built like so</p>
+<pre><code>&gt; cd $BISICLES_HOME/BISICLES/code/exec2D
+&gt; make all OPT=TRUE MPI=TRUE
+</code></pre>
+<p>For serious runs, this is the one you need. Even on workstations with a
+few processors (like dartagnan.ggy.bris.ac.uk) noticeable (2X-4X) speed
+improvements are realized by running parallel code, and on clusters like
+bluecrystal or hopper.nersc.gov we have obtained 100X speedups for big
+enough problems (and hope to obtain 1000X speedups).</p>
+<p>Finally, should you feel the urge, you can have a non-optimized parallel
+version, which can be used for hunting down low-level bugs that crop up
+in parallel operation but not in serial operation.</p>
+<p>To build with PETSc support, add  "USE_PETSC=TRUE " to your build line,
+e.g.</p>
+<pre><code>&gt; cd $BISICLES_HOME/BISICLES/code/exec2D
+&gt; make all OPT=TRUE MPI=TRUE USE_PETSC=TRUE
+</code></pre>
+<h3 id="make-clean">Make clean</h3>
+<p>On occasion it might be necessary to rebuild BISICLES entirely, rather
+than just those parts where a file has changed. To do so, run</p>
+<pre><code>cd $BISICLES_HOME/BISICLES/code
+</code></pre>
+<p>then</p>
+<pre><code>make clean
+</code></pre>
+<p>for unoptimized, serial builds,</p>
+<pre><code>make clean OPT=TRUE
+</code></pre>
+<p>for optimized serial builds, and</p>
+<pre><code>make clean OPT=TRUE MPI=TRUE
+</code></pre>
+<p>for optimized parallel builds</p>
+<h3 id="make-realclean">Make realclean</h3>
+<p>In the event even more houscleaning is desired, the  "realclean " target
+does everything the  "clean " target does, and additionally removes many
+other user-generated files, including all files with the  ".hdf5 "
+suffix (including checkpoint and plot files).</p>
+<h2 id="running-bisicles-on-a-simple-problem">Running BISICLES on a simple problem</h2>
+<p>All the data to run <a href="http://homepages.ulb.ac.be/~fpattyn/mismip3d/welcome.md">Frank Pattyn 's MISMIP3D P075
+experiment</a>
+is already present. Change to the MISMIP3D subdirectory, and generate
+some input files from a template.</p>
+<pre><code>&gt; cd $BISICLES_HOME/BISICLES/examples/MISMIP3D
+&gt; sh make_inputs.sh
+</code></pre>
+<p>then we are ready to go.</p>
+<h3 id="running-on-a-serial-workstation">Running on a serial Workstation</h3>
+<p>On a serial machine, try the 3 AMR level problem (which will have a
+resolution of 800 m at the grounding line, and 6.25 km far from it).</p>
+<pre><code>$BISICLES_HOME/BISICLES/code/exec2D/driver2d.Linux.64.g++.gfortran.DEBUG.OPT.ex  inputs.mismip3D.p075.l1l2.l3 &gt; sout.0 2&gt;err.0 &amp;
+</code></pre>
+<p>You can watch progress by typing</p>
+<pre><code>&gt; tail -f sout.0
+</code></pre>
+<p>and eventually, you will get a series of plot *2d.hdf5 files that you
+can view in visit</p>
+<h3 id="running-on-a-parallel-workstation">Running on a parallel Workstation</h3>
+<p>If you have a parallel machine, run the 5 AMR level problem (which will
+have a resolution of 200 m at the grounding line, and 6.25 km far from
+it).</p>
+<pre><code>&gt; nohup mpirun -np 4 $BISICLES_HOME/BISICLES/code/exec2D/driver2d.Linux.64.mpic++.gfortran.DEBUG.OPT.MPI.ex inputs.mismip3D.p075.l1l2.l5 &amp;
+</code></pre>
+<p>replace -np 4 with the appropriate count for your machine: this may be
+many as the number of CPU cores, but perhaps fewer, because these will
+typically share some resources. Ideally, do a series of scaling
+experiments to come up with a graph like the example below. This example
+is based on real world problem set in the Amundsen Sea Embayment, and
+includes both in-memory calculations (CPU) and file I/O. File I/O is
+often expensive, especially on clusters. The example below measures the
+time taken to evolve the model over 16 timesteps and write both a
+checkpoint and plot file (each around 200 MB).</p>
+<p><img alt="scaling with CPU count, example" src="../ggtuna_scaling.png" /></p>
+<p>See also the <a href="../sites/">Site specific notes</a>.</p>
+<p>You can watch progress by typing</p>
+<pre><code>&gt; tail -f pout.0
+</code></pre>
+<p>and eventually, you will get a series of plot *2d.hdf5 files that you
+can view in visit</p>
+<h3 id="running-on-a-cluster">Running on a cluster</h3>
+<p>See the <a href="../sites/">Site specific notes</a></p>
+<h2 id="build-all-of-bisicles">Build all of BISICLES</h2>
+<p>Once BISICLES is working on a given machine, it might be convenient to
+build everything - standalone BISICLES, <a href="../libamrfile/">the R/Python/MATLAB analysis
+tools</a> , the programmable <a href="../cdriver/">cdriver interface</a>, the <a href="../filetools/">file
+tools</a> for pre- and post-processing, and so on. </p>
+<p>To build everything, run e.g</p>
+<pre><code>cd $BISICLES_HOME/BISICLES/code
+make all OPT=TRUE MPI=TRUE
+</code></pre>
+<p>or specify the options you prefer.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../sites/" class="btn btn-neutral float-right" title="Site notes">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../sites/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

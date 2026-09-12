@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Ice velocity - BISICLES user documents</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Ice velocity";
+        var mkdocs_page_input_path = "velocity.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c++.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> BISICLES user documents
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Building and running</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../readme/">Generic instructions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../sites/">Site notes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../trouble/">Common issues</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Executables</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../driver/">Main program (driver)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../filetools/">File tools</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cdriver/">C/Fortran API</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Run time options</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../io/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../geometry/">Ice sheet geometry</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../stress/">Stresses</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../thermodynamics/">Thermodynamics</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Ice velocity</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#jfnk-solver">JFNK Solver</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#known-velocity">Known Velocity</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#petsc-nonlinear-solver">Petsc Nonlinear Solver</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fasmgamr">FASMGAMR</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#python">Python</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#inverse-vertically-integrated-velocity-solver">Inverse Vertically Integrated Velocity Solver</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../surfaceflux/">Surface fluxes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../leveldatainterface/">LevelData interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pythoninterface/">Python interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="../readme.md#running-bisicles-on-a-simple-problem">MISMIP3D</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineisland/">Pine Island Glacier</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineislandinverse/">PIG inverse problem</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Data viz / analysis</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../libamrfile/">Python/R/MATLAB (libamrfile)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../visit/">VisIt</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">BISICLES user documents</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Run time options</li>
+      <li class="breadcrumb-item active">Ice velocity</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="bisicles-ice-velocity">BISICLES ice velocity</h1>
+<p>The ice velocity calculation depends at minimum on the <a href="../geometry/">ice sheet
+geometry</a> and <a href="../stress/">the in-ice and basal
+stresses</a>. It may also depend on the
+<a href="../thermodynamics/">thermodynamics</a> and other factors that influence
+the in-ice and basal stresses.</p>
+<p>If you have built the doxygen code documentation, the C++ class
+hierarchy underlying the ice velocity calculation is described at
+<a href="../code/doc/doxygen/html/classIceVelocitySolver.html">classIceVelocitySolver.md</a></p>
+<p>An ice velocity model is specified at run time by setting</p>
+<pre><code>  amr.velocity_solver_type = &lt; integer solver_type, default 1 &gt;
+</code></pre>
+<p>Additional options include</p>
+<pre><code>  amr.velocity_solver_interval = &lt; integer n, default 1 &gt; recompute the velocity every n timesteps.
+  amr.regrid_interval = &lt; integer m, default 1 &gt; recompute the mesh and velocity every m timesteps.
+</code></pre>
+<p>Options for  &lt; solver_type  &gt; are</p>
+<ol>
+<li><a href="#picard">Picard Solver</a>  [deprecated, because the JFNKSolver
+    provides the same functionality ]</li>
+<li><a href="#jfnk">JFNK Solver</a> (the default) solves the vertically integrated
+    (SSA, L1L2) stress equations using a matrix-free Newton method.</li>
+<li><a href="#known">Known Velocity</a> specifies a known velocity</li>
+<li><a href="#snes">Petsc Nonlinear Solver</a>  [EXPERIMENTAL ] solves the
+    vertically integrated (SSA, L1L2) stress equations using a PETSc
+    SNES.</li>
+<li><a href="#fas">FASMGAMR</a>  [EXPERIMENTAL ] A full-approximation storage
+    solver for the vertically integrated (SSA, L1L2) stress equations.</li>
+<li><a href="#python">Python</a> specifies velocity through the python interface</li>
+<li><a href="#inversevi">Inverse Vertically Integrated Velocity Solver</a>
+    Estimates the basal friction and stiffness coefficients in order to
+    provide a velocity field that fits observations.</li>
+</ol>
+<h2 id="jfnk-solver">JFNK Solver</h2>
+<p>BISICLES JFNK (Jacobian-free Newton-Krylov) solver solves the nonlinear
+vertically integrated (SSA, L1L2) stress equations using a matrix-free
+Newton method. It is the default for conventional (forward) simulations,
+and is also used by the <a href="#inversevi">Inverse Vertically Integrated Velocity
+Solver</a>. BISICLES spends around 95% of its time solving the
+stress equations, and it is also the calculation most likely to fail.
+That said, it often fails or perform poorly when the input conditions -
+basal traction, ice thickness, boundary conditions - are incorrect in
+some way. For example, a region of floating ice unconnected to either
+grounded ice, a rocky wall, or a domain boundary with Dirichlet
+conditions does not have a unique solution - it is an ill-posed problem.
+So if you have problems - especially on time step 0 - check the input
+data first, especially the <a href="../geometry/">geometry</a> and the <a href="../stress/#basal">basal
+traction</a>.</p>
+<p>However, problems that are in theory well-posed but ill-conditioned -
+for example the Drygalski ice tongue - can see their iterations diverge,
+and in those cases paying attention to the JFNKSolver options can be
+useful. The most useful course in such cases is to try the <a href="#jfnk-petsc">PETSc linear
+solvers</a></p>
+<h3 id="option-petsc-linear-solvers">Option: PETSc linear solvers</h3>
+<p>By default, the JFNK solver uses the Chombo geometric multigrid (GMG)
+linear solvers to compute the Newton step. If you find that convergence
+of the velocity solver is stalling (or even diverging), you might want
+to try a PETSc algebraic multigrid (AMG) solver. To switch to the PETSc
+solvers,</p>
+<ol>
+<li>
+<p>You will need a .petsrc file to tell the PETSc solvers what to do.
+    PETSc has an enormous range of options, but the important thing is
+    to use a suitable preconditioner because the PETSc default does not
+    work well in many cases. We usually find the
+    <a href="http://computation.llnl.gov/casc/linear_solvers/sls_hypre.md">HYPRE</a>
+    BoomerAMG solver. to work well. A minimal .petscrc file would be
+    something like</p>
+<pre><code>#.petsrc
+#use the hypre / boomeramg preconditioner
+-pc_type hypre
+-pc_hypre_type boomeramg
+#gmres is the safe (and default) option for a KSP method. bcgs is sometimes quicker
+-ksp_type gmres
+#this makes the output less confusing, but it is optional
+-ksp_norm_type unpreconditioned
+#sensible values? depends what you are doing
+-ksp_max_it 20
+-ksp_rtol 1.0e-4
+#include this to see log the PETSc solver progress in pout.X etc
+-ksp_monitor
+</code></pre>
+</li>
+<li>
+<p>Edit your BISICLES input file. There are two ways to use PETSC:</p>
+</li>
+<li>
+<p>As a bottom solver in the Chombo GMG solver. (if you don 't know
+    what that means, don 't worry  -- suffice it to say that in many
+    cases, this option occupies the middle ground between the Chombo
+    native GMG solvers and a full AMR AMG solver.). Assuming you are
+    using the JFNKSolver for your velocity solve, add the following line
+    to your inputs file:</p>
+<pre><code>JFNKSolver.bottom_solver_type = 1
+</code></pre>
+</li>
+<li>
+<p>If that doesn 't help, then you 're ready for the full AMR PETSc
+    solver. Assuming once again that you 're using the JFNKSolver, then
+    change</p>
+<pre><code>  JFNKSolver.solverType = 0
+  JFNKSolver.normType = 0
+</code></pre>
+<p>to</p>
+<pre><code>  JFNKSolver.solverType = 4
+  JNKKSolver.normType = 2
+</code></pre>
+</li>
+</ol>
+<h2 id="known-velocity">Known Velocity</h2>
+<h2 id="petsc-nonlinear-solver">Petsc Nonlinear Solver</h2>
+<h2 id="fasmgamr">FASMGAMR</h2>
+<h2 id="python">Python</h2>
+<h2 id="inverse-vertically-integrated-velocity-solver">Inverse Vertically Integrated Velocity Solver</h2>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../thermodynamics/" class="btn btn-neutral float-left" title="Thermodynamics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../surfaceflux/" class="btn btn-neutral float-right" title="Surface fluxes">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../thermodynamics/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../surfaceflux/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
