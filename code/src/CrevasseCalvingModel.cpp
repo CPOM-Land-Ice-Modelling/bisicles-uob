@@ -100,7 +100,7 @@ void CrevasseCalvingModel::applyCriterion
     {
       // stress model only makes sense when the thickness and veolcity are in sync
       const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
-      LevelData<FArrayBox> locals(levelCoords.grids(), 6 , IntVect::Unit);
+      LevelData<FArrayBox> locals(levelCoords.grids(), 8 , IntVect::Unit);
 
       //compute a (scalar) stress measure;
       LevelData<FArrayBox> stressMeasure;aliasLevelData(stressMeasure, &locals, Interval(0,0));
@@ -144,12 +144,14 @@ void CrevasseCalvingModel::applyCriterion
 	} // end loop over boxes
      
       //compute remaining ice thickness
-      LevelData<FArrayBox> remnant;aliasLevelData(remnant, &locals, Interval(4,4));
+      LevelData<FArrayBox> remnant ;aliasLevelData(remnant, &locals, Interval(4,4));
       LevelData<FArrayBox> waterDepth;aliasLevelData(waterDepth, &locals, Interval(5,5));
-      //m_waterDepth->evaluate(waterDepth, a_amrIce, a_level, 0.0);
+      LevelData<FArrayBox> factor;aliasLevelData(factor, &locals, Interval(6,6));
+      
       getWaterDepth(waterDepth, a_amrIce, a_level);
 
-      computeRemnant(remnant, stressMeasure, thcke, usrfe, habe, waterDepth, levelCoords);
+      m_factor->evaluate(factor, a_amrIce, a_level, 0.0);
+      computeRemnant(remnant, stressMeasure, thcke, usrfe, habe, waterDepth, factor, levelCoords);
       
       //used to make sure that only cells within some distance of the open sea calve: 
       LevelData<BaseFab<int> > grownOpenSea (levelCoords.grids(), 1 , IntVect::Unit);
@@ -253,8 +255,9 @@ CrevasseCalvingModel::CrevasseCalvingModel(ParmParse& a_pp)
   //a_pp.get("waterDepth",m_waterDepth);
 
   std::string prefix (a_pp.prefix());
-  m_waterDepth = SurfaceFlux::parse( (prefix + ".CrevasseWaterDepth").c_str());
-
+  
+  m_waterDepth = SurfaceFlux::parse( (prefix + "crevasseWaterDepth").c_str());
+  if (m_waterDepth == NULL) m_waterDepth = SurfaceFlux::parse( (prefix + ".CrevasseWaterDepth").c_str());
   if (m_waterDepth == NULL)
     {
       // try the older style waterDepth constant
@@ -265,7 +268,14 @@ CrevasseCalvingModel::CrevasseCalvingModel(ParmParse& a_pp)
       m_waterDepth = static_cast<SurfaceFlux*>(ptr);
     }
 
-
+  m_factor = SurfaceFlux::parse((prefix + ".factor").c_str());
+  if (m_factor == NULL)
+  {
+     constantFlux* ptr = new constantFlux;
+     ptr->setFluxVal(1.0);
+     m_factor = static_cast<SurfaceFlux*>(ptr);
+  }
+  
   m_includeBasalCrevasses = false;
   a_pp.query("includeBasalCrevasses",m_includeBasalCrevasses);
   m_calvingZoneLength = -1.0;
@@ -305,15 +315,16 @@ CrevasseCalvingModel::~CrevasseCalvingModel()
 {
   if (m_domainEdgeCalvingModel != NULL)
     {
-      delete m_domainEdgeCalvingModel;
-      m_domainEdgeCalvingModel = NULL;
+      delete m_domainEdgeCalvingModel; m_domainEdgeCalvingModel = NULL;
     }
   if (m_waterDepth != NULL)
     {
-      delete m_waterDepth;
-      m_waterDepth = NULL;
+      delete m_waterDepth; m_waterDepth = NULL;
     }
-
+  if (m_factor != NULL)
+  {
+	delete m_factor; m_factor = NULL;
+  }
  
 }
 
@@ -325,6 +336,7 @@ void BennCalvingModel::computeRemnant(LevelData<FArrayBox>& a_remnant,
 				      const LevelData<FArrayBox>& a_usrf,
 				      const LevelData<FArrayBox>& a_hab, 
 				      const LevelData<FArrayBox>& a_waterDepth, 
+				      const LevelData<FArrayBox>& a_factor,
 				      const LevelSigmaCS& a_coords)
 {
   
@@ -343,6 +355,7 @@ void BennCalvingModel::computeRemnant(LevelData<FArrayBox>& a_remnant,
       const FArrayBox& thck = a_thck[dit];
       const FArrayBox& wd = a_waterDepth[dit];
       const FArrayBox& s = a_stress[dit];
+      const FArrayBox& f = a_factor[dit];
       Box b = a_coords.grids()[dit];
       b.grow(1); //need one layer of ghost cells
       for (BoxIterator bit(b);bit.ok();++bit)
@@ -356,12 +369,12 @@ void BennCalvingModel::computeRemnant(LevelData<FArrayBox>& a_remnant,
 	    	{
 	      	  //explicit basal crevasse depth calculation
 	      	  Real Db = ((rhoi/(rhoo-rhoi)) * ( s(iv) /(grav*rhoi) - hab(iv)));
-	      	  remnant(iv) = std::max( 0.0, thck(iv) - Ds -  Db);
+	      	  remnant(iv) = std::max( 0.0, thck(iv) - f(iv)*(Ds -  Db));
 	        }	
 	       else
 	        {
 	         //assume full thickness fracture if surface crevasses reach sea-level
-	         remnant(iv) = std::max( 0.0, usrf(iv) - Ds);
+	         remnant(iv) = std::max( 0.0, usrf(iv) - f(iv)*Ds);
 		}
 	     } // end tension
 	  } // end loop over cells
@@ -380,114 +393,5 @@ BennCalvingModel::~BennCalvingModel()
 
 }
 
-
-void VdVCalvingModel::computeRemnant(LevelData<FArrayBox>& a_remnant,
-				     const LevelData<FArrayBox>& a_stress,
-				     const LevelData<FArrayBox>& a_thck,
-				     const LevelData<FArrayBox>& a_usrf,
-				     const LevelData<FArrayBox>& a_hab, 
-				     const LevelData<FArrayBox>& a_waterDepth, 
-				     const LevelSigmaCS& a_coords)
-{
-  
-  CH_TIME("VdVCalvingModel::computeRemnant");
-
-  const Real& rhoi = a_coords.iceDensity();
-  const Real& rhoo = a_coords.waterDensity();
-  const Real& grav = a_coords.gravity();
-  // compute the stress intensity for fracture to the waterline
-  for (DataIterator dit(a_coords.grids());dit.ok();++dit)
-    {
-      FArrayBox& remnant = a_remnant[dit];
-      const FArrayBox& usrf = a_usrf[dit];
-      const FArrayBox& thck = a_thck[dit];
-      const FArrayBox& wd = a_waterDepth[dit];
-      const FArrayBox& s = a_stress[dit];
-      Box b = a_coords.grids()[dit];
-      b.grow(1); //need one layer of ghost cells
-
-      FArrayBox depth(b,1); // crevasse depth -
-      FArrayBox K(b,2); //stress intensity;
-
-#define TOUGHNESS 0.1e6
-      if (m_includeBasalCrevasses)
-	{
-	  // stress intensity for full thickness basal crevasses
-	  FArrayBox thckp(b,1); thckp.setVal(0.0);
-	  for (BoxIterator bit(b); bit.ok(); ++bit)
-	    {
-	      const IntVect& iv = bit();
-	      thckp(iv) = std::max(thck(iv)-usrf(iv),0.0); // peizometric height
-	      depth(iv) = thck(iv);
-	    }
-	  
-	  //surface crevasses
-	  FORT_VDVSTRESSS( CHF_FRA1(K,0),
-			   CHF_CONST_FRA1(thck,0),
-			   CHF_CONST_FRA1(wd,0),
-			   CHF_CONST_FRA1(depth,0),
-			   CHF_CONST_FRA1(s,0),
-			   CHF_CONST_REAL(rhoi),
-			   CHF_CONST_REAL(rhoo),
-			   CHF_CONST_REAL(grav),
-			   CHF_BOX(b));
-	  //basal crevasses
-	  FORT_VDVSTRESSB( CHF_FRA1(K,1),
-			   CHF_CONST_FRA1(thck,0),
-			   CHF_CONST_FRA1(thckp,0),
-			   CHF_CONST_FRA1(depth,0),
-			   CHF_CONST_FRA1(s,0),
-			   CHF_CONST_REAL(rhoi),
-			   CHF_CONST_REAL(rhoo),
-			   CHF_CONST_REAL(grav),
-			   CHF_BOX(b));
-
-
-	  for (BoxIterator bit(b); bit.ok(); ++bit)
-	    {
-	      const IntVect& iv = bit();
-	      remnant(iv) = std::max(0.0,TOUGHNESS - std::max(K(iv,1),K(iv,0)));
-	    }
-
-	}
-      else
-	{
-	  // compute stress intensity for surface crevasse that full thickness or the water-line
-	  for (BoxIterator bit(b); bit.ok(); ++bit)
-	    {
-	      const IntVect& iv = bit();
-	      depth(iv) = std::min(usrf(iv),.999*thck(iv));
-	    }
-	  FORT_VDVSTRESSS( CHF_FRA1(K,0),
-			   CHF_CONST_FRA1(thck,0),
-			   CHF_CONST_FRA1(wd,0),
-			   CHF_CONST_FRA1(depth,0),
-			   CHF_CONST_FRA1(s,0),
-			   CHF_CONST_REAL(rhoi),
-			   CHF_CONST_REAL(rhoo),
-			   CHF_CONST_REAL(grav),
-			   CHF_BOX(b));
-	  
-	 for (BoxIterator bit(b); bit.ok(); ++bit)
-	    {
-	      const IntVect& iv = bit();
-	      remnant(iv) = std::max(0.0,TOUGHNESS - K(iv,0));
-	    }
-	} // end if m_includeBasalCrevasses
-    } // end loop over boxes
-
-  a_remnant.exchange();
-}
-
-VdVCalvingModel::VdVCalvingModel(ParmParse& a_pp)  
-  : CrevasseCalvingModel(a_pp)
-{
-  
-}
-
-VdVCalvingModel::~VdVCalvingModel()
-{
-
-}
 
 #include "NamespaceFooter.H"

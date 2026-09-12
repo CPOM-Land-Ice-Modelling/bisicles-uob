@@ -389,10 +389,6 @@ CalvingModel* CalvingModel::parseCalvingModel(const char* a_prefix)
     {
       ptr = new BennCalvingModel(pp);
     }
-  else if (type == "VanDerVeenCalvingModel")
-    {
-      ptr = new VdVCalvingModel(pp);
-    }
   else if (type == "ThicknessCalvingModel")
     {  
       Real minThickness = 0.0;

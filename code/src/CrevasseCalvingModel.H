@@ -21,7 +21,7 @@
 /// CrevasseCalvingModel implements the methods common to all of these, 
 /// and requires its subclasses to compute a remnnat given the stress.
 /// The remnant could be the remaining thickness of ice 
-///  remnant = (thickness - crevasse depth)/thickness
+///  remnant = (thickness - factor*crevasse depth)/thickness
 /// but could be any quantity where remnant = 0 indiciates full fracture and
 /// remnant > 0 is a partial fracture.
 class CrevasseCalvingModel : public CalvingModel
@@ -39,7 +39,8 @@ public:
 			      const LevelData<FArrayBox>& a_thck,
 			      const LevelData<FArrayBox>& a_usrf,
 			      const LevelData<FArrayBox>& a_hab, 
-			      const LevelData<FArrayBox>& a_waterDepth, 
+			      const LevelData<FArrayBox>& a_waterDepth,
+			      const LevelData<FArrayBox>& a_factor, 
 			      const LevelSigmaCS& a_coords) = 0;
 			      
 
@@ -59,6 +60,7 @@ public:
   CrevasseCalvingModel(const CrevasseCalvingModel& a) 
   {
     m_waterDepth = a.m_waterDepth->new_surfaceFlux();
+    m_factor = a.m_factor->new_surfaceFlux();
     m_includeBasalCrevasses = a.m_includeBasalCrevasses;
     m_calvingZoneLength = a.m_calvingZoneLength;
     m_domainEdgeCalvingModel = new DomainEdgeCalvingModel(*a.m_domainEdgeCalvingModel);
@@ -73,6 +75,7 @@ protected:
 
 
   SurfaceFlux* m_waterDepth;
+  SurfaceFlux* m_factor;
   bool m_includeBasalCrevasses;
   Real m_calvingZoneLength;
   DomainEdgeCalvingModel* m_domainEdgeCalvingModel;
@@ -99,6 +102,7 @@ public:
 			      const LevelData<FArrayBox>& a_usrf,
 			      const LevelData<FArrayBox>& a_hab,
 			      const LevelData<FArrayBox>& a_waterDepth,
+			      const LevelData<FArrayBox>& a_factor,
 			      const LevelSigmaCS& a_coords);
 
   BennCalvingModel(const BennCalvingModel& a) : CrevasseCalvingModel(a)
@@ -113,36 +117,6 @@ public:
   }
 };
 
-/// Calving model based on crevasse opening
-/// see Van der Veen (1998) , Cold Regions Sci. Tech. vol 27 p 231
-class VdVCalvingModel : public CrevasseCalvingModel
-{
-
-public:  
-  
-  VdVCalvingModel(ParmParse& a_pp);
-
-  ~VdVCalvingModel();
-
-  virtual void computeRemnant(LevelData<FArrayBox>& a_remnant,
-			      const LevelData<FArrayBox>& a_stress,
-			      const LevelData<FArrayBox>& a_thck,
-			      const LevelData<FArrayBox>& a_usrf,
-			      const LevelData<FArrayBox>& a_hab, 
-			      const LevelData<FArrayBox>& a_waterDepth,
-			      const LevelSigmaCS& a_ccords);
-
-  VdVCalvingModel(const VdVCalvingModel& a) : CrevasseCalvingModel(a)
-  {
-  }
-
-  /// factory method
-  virtual CalvingModel* new_CalvingModel()
-  {
-    return new VdVCalvingModel(*this);
-  }
-};
-  
 
 #include "NamespaceFooter.H"
 
