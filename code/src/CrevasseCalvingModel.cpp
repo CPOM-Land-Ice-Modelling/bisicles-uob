@@ -83,23 +83,21 @@ void CrevasseCalvingModel::getWaterDepth(LevelData<FArrayBox>& a_waterDepth, con
   m_waterDepth->evaluate(a_waterDepth, a_amrIce, a_level, 0.0);
 }
 	      		 
-void CrevasseCalvingModel::applyCriterion
-(LevelData<FArrayBox>& a_thickness,
- LevelData<FArrayBox>& a_calvedIce,
- LevelData<FArrayBox>& a_addedIce,
- LevelData<FArrayBox>& a_removedIce, 
- LevelData<FArrayBox>& a_iceFrac, 
+void CrevasseCalvingModel::evaluateCriterion
+(LevelData<BaseFab<bool > >& a_critical,
  const AmrIce& a_amrIce,
  int a_level,
  Stage a_stage)
 {
   //domain edge calving model always applies
-  m_domainEdgeCalvingModel->applyCriterion( a_thickness, a_calvedIce, a_addedIce, a_removedIce, a_iceFrac,a_amrIce, a_level, a_stage);
+  m_domainEdgeCalvingModel->evaluateCriterion( a_critical, a_amrIce, a_level, a_stage);
   
   if  (a_stage == PostVelocitySolve)
     {
       // stress model only makes sense when the thickness and veolcity are in sync
       const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
+      const LevelData<FArrayBox>& levelThck = levelCoords.getH();
+      const LevelData<FArrayBox>& levelIceFrac = *a_amrIce.iceFrac(a_level);
       LevelData<FArrayBox> locals(levelCoords.grids(), 8 , IntVect::Unit);
 
       //compute a (scalar) stress measure;
@@ -114,10 +112,10 @@ void CrevasseCalvingModel::applyCriterion
 
       for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
 	{
-	  thcke[dit].copy(a_thickness[dit]);
+	  thcke[dit].copy(levelThck[dit]);
 	  FORT_EFFECTIVETHICKNESS( CHF_FRA1(thcke[dit],0), 
-				   CHF_CONST_FRA1(a_thickness[dit],0),
-				   CHF_CONST_FRA1(a_iceFrac[dit],0), 
+				   CHF_CONST_FRA1(levelThck[dit],0),
+				   CHF_CONST_FRA1(levelIceFrac[dit],0), 
 				   CHF_BOX(thcke[dit].box()));
 	  
 	  Real rhoi = levelCoords.iceDensity();
@@ -147,6 +145,11 @@ void CrevasseCalvingModel::applyCriterion
       LevelData<FArrayBox> remnant ;aliasLevelData(remnant, &locals, Interval(4,4));
       LevelData<FArrayBox> waterDepth;aliasLevelData(waterDepth, &locals, Interval(5,5));
       LevelData<FArrayBox> factor;aliasLevelData(factor, &locals, Interval(6,6));
+      // non-tension cells should never calve
+      for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
+        {
+          remnant[dit].setVal(1.0e+10);
+        }
       
       getWaterDepth(waterDepth, a_amrIce, a_level);
 
@@ -201,38 +204,21 @@ void CrevasseCalvingModel::applyCriterion
 	    }
 	}
 
-      //update thickness and mask.
+      //mark critical cells.
       for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
 	{
-	  FArrayBox& thck = a_thickness[dit];
-	  FArrayBox& calved = a_calvedIce[dit];
-	  FArrayBox& added = a_addedIce[dit];
-	  FArrayBox& removed = a_removedIce[dit];
-	  FArrayBox& iceFrac = a_iceFrac[dit];
-	  
+	  BaseFab<bool>& crit = a_critical[dit];
 	  Box b = levelCoords.grids()[dit];
 	  for (BoxIterator bit(b); bit.ok(); ++bit)
 	    {
 	      const IntVect& iv = bit(); 
-	      Real prevThck = thck(iv);
 	      if ( (grownOpenSea[dit](iv) == OPENSEAMASKVAL ) && ( remnant[dit](iv) < TINY_THICKNESS ))
 		{
-		  thck(iv) = 0.0;
-		  iceFrac(iv,0) = 0.0;
+		  crit(iv) = true;
 		}
-
-	      // Record gain/loss of ice.
-	      if (calved.box().contains(iv))
-		{
-		  // grownOpenSea can change OPENLAND or GROUNDED mask to OPENSEA
-		  updateCalvedIce(thck(iv),prevThck,grownOpenSea[dit](iv),added(iv),calved(iv),removed(iv));
-		}
-
 	    } // end loop over cells
 	} // end loop over boxes
-      a_iceFrac.exchange();
-      a_thickness.exchange();
-    } // end (a_stage == PostVelocitySolve || a_stage == PostRegrid)
+    } // end (a_stage == PostVelocitySolve)
 
 }
 

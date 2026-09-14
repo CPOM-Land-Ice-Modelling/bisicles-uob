@@ -909,7 +909,10 @@ int IceUtility::eliminateFastIce
 			}
 		      nEliminated++;
 		      // Record gain/loss of ice
-		      CalvingModel::updateCalvedIce(H(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
+		      if (H(iv) > prevThck)
+		      added += (prevThck - H(iv));
+		    else
+		      calved += (prevThck - H(iv));
 		      //removed(iv) += (prevThck-H(iv));
 
 		    }
@@ -1098,7 +1101,10 @@ void IceUtility::eliminateRemoteIce
 		  pout() << " (remote) eliminated level " << lev << " iv " << iv << std::endl;
 	      	}
 	      // Record gain/loss of ice
-	      CalvingModel::updateCalvedIce(h(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
+	      if (h(iv) > prevThck)
+	        added += (prevThck - h(iv));
+	      else
+	        calved += (prevThck - h(iv));
 	    }
 	}
       levelCS.getH().exchange();

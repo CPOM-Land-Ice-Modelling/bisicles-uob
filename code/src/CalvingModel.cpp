@@ -67,59 +67,8 @@ VariableRateCalvingModel::getCalvingRate(LevelData<FArrayBox>& a_calvingRate, co
 }
 
 
-void 
-DeglaciationCalvingModelA::applyCriterion
-(LevelData<FArrayBox>& a_thickness, 
- LevelData<FArrayBox>& a_calvedIce,
- LevelData<FArrayBox>& a_addedIce,
- LevelData<FArrayBox>& a_removedIce, 
- LevelData<FArrayBox>& a_iceFrac, 
- const AmrIce& a_amrIce,
- int a_level,
- Stage a_stage)
-{
-  const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
-  for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
-    {
-      const BaseFab<int>& mask = levelCoords.getFloatingMask()[dit];
-      FArrayBox& thck = a_thickness[dit];
-      FArrayBox& calved = a_calvedIce[dit];
-      FArrayBox& added = a_addedIce[dit];
-      FArrayBox& removed = a_removedIce[dit];
-      Box b = thck.box();
-
-      for (BoxIterator bit(b); bit.ok(); ++bit)
-	{
-	  const IntVect& iv = bit();
-	  Real prevThck = thck(iv);
-	  if (mask(iv) == OPENSEAMASKVAL)
-	    {
-	      thck(iv) = 0.0;
-	    }
-	  else if (mask(iv) == OPENLANDMASKVAL)
-	    {
-	      thck(iv) = 0.0;
-	    }
-	  else
-	    {
-	      thck(iv) = std::max(thck(iv),m_minThickness);
-	    }
-	      
-	  // Record gain/loss of ice
-	  if (calved.box().contains(iv))
-	    {
-	      updateCalvedIce(thck(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
-	    }
-	}
-    }
-}
-
-void DomainEdgeCalvingModel::applyCriterion
-(LevelData<FArrayBox>& a_thickness,
- LevelData<FArrayBox>& a_calvedIce,
- LevelData<FArrayBox>& a_addedIce,
- LevelData<FArrayBox>& a_removedIce,  
- LevelData<FArrayBox>& a_iceFrac, 
+void DomainEdgeCalvingModel::evaluateCriterion
+(LevelData<BaseFab<bool > >& a_critical,
  const AmrIce& a_amrIce,
  int a_level,
  Stage a_stage)
@@ -129,12 +78,10 @@ void DomainEdgeCalvingModel::applyCriterion
   const DisjointBoxLayout& grids = levelCoords.grids();
   const ProblemDomain domain = grids.physDomain();
   const LevelData<BaseFab<int> >& levelMask = levelCoords.getFloatingMask();
-  const IntVect ghost = a_thickness.ghostVect();
-  //const LevelData<FArrayBox>& vt  = *a_amrIce.viscousTensor(a_level);
+  const IntVect ghost = a_critical.ghostVect();
   DataIterator dit = grids.dataIterator();
   for (dit.begin(); dit.ok(); ++dit)
     {
-      //const Box& gridBox = grids[dit];
       for (int dir=0; dir<SpaceDim; dir++)
 	{
 	  if (!domain.isPeriodic(dir))
@@ -149,23 +96,11 @@ void DomainEdgeCalvingModel::applyCriterion
                   IntVect transverseVect = ghost;
                   transverseVect[dir] = 0;
                   loBox.grow(transverseVect);
-		  loBox &= a_thickness[dit].box();
+		  loBox &= a_critical[dit].box();
 		  for (BoxIterator bit(loBox); bit.ok(); ++bit)
 		    {
 		      const IntVect& iv = bit();
-		      const IntVect ip = iv + BASISV(dir);
-		      //if (levelMask[dit](ip) != GROUNDEDMASKVAL)
-		      Real prevThck = a_thickness[dit](iv);
-		      a_thickness[dit](iv) = 0.0;
-		      if (a_iceFrac[dit].box().contains(iv))
-			a_iceFrac[dit](iv) = 0.0;
-		      // Record gain/loss of ice
-		      if (a_calvedIce[dit].box().contains(iv))
-			{
-			  updateCalvedIce(a_thickness[dit](iv),prevThck,levelMask[dit](iv),
-					  a_addedIce[dit](iv),a_calvedIce[dit](iv),a_removedIce[dit](iv));
-			}
-
+		      a_critical[dit](iv) = true;
 		    }
 		}
 	      
@@ -178,125 +113,34 @@ void DomainEdgeCalvingModel::applyCriterion
                   IntVect transverseVect = ghost;
                   transverseVect[dir] = 0;
                   hiBox.grow(transverseVect);
-		  hiBox &= a_thickness[dit].box();
+		  hiBox &= a_critical[dit].box();
 		  for (BoxIterator bit(hiBox); bit.ok(); ++bit)
 		    {
 		      const IntVect& iv = bit();
-		      const IntVect ip = iv - BASISV(dir);
-		      //if (levelMask[dit](ip) != GROUNDEDMASKVAL)
-		      Real prevThck = a_thickness[dit](iv);
-		      a_thickness[dit](iv) = 0.0;
-		      if (a_iceFrac[dit].box().contains(iv))
-			a_iceFrac[dit](iv) = 0.0;
-		      // Record gain/loss of ice
-		      if (a_calvedIce[dit].box().contains(iv))
-			{
-			  updateCalvedIce(a_thickness[dit](iv),prevThck,levelMask[dit](iv),
-				      a_addedIce[dit](iv),a_calvedIce[dit](iv),a_removedIce[dit](iv));
-			}
-
+		      a_critical[dit](iv) = true;
 		    }
 		} 
 	    } // end if (!domain.isPeriodic(dir))
 	} // end loop over dirs
       
       const BaseFab<int>& mask = levelMask[dit];
-      FArrayBox& thck = a_thickness[dit];
-      FArrayBox& calved = a_calvedIce[dit];
-      FArrayBox& added = a_addedIce[dit];
-      FArrayBox& removed = a_removedIce[dit];
       const Box& b = grids[dit];
       for (BoxIterator bit(b); bit.ok(); ++bit)
 	{
 	  const IntVect& iv = bit();
-	  Real prevThck = thck(iv);
 	  if (m_preserveSea && mask(iv) == OPENSEAMASKVAL)
 	    {
-	      thck(iv) = 0.0;
+	      a_critical[dit](iv) = true;
 	    }
 	  else if (m_preserveLand && mask(iv) == OPENLANDMASKVAL)
 	    {
-	      thck(iv) = 0.0;
+	      a_critical[dit](iv) = true;
 	    }
-	  thck(iv) = std::max(thck(iv),0.0);
-
-	  // Record gain/loss of ice
-	  if (calved.box().contains(iv))
-	    {
-	      updateCalvedIce(thck(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
-	    }
-
 	}
 
     } // end loop over boxes
 
 }
-
-void ProximityCalvingModel::applyCriterion
-(LevelData<FArrayBox>& a_thickness,
- LevelData<FArrayBox>& a_calvedIce,
- LevelData<FArrayBox>& a_addedIce,
- LevelData<FArrayBox>& a_removedIce,  
- LevelData<FArrayBox>& a_iceFrac, 
- const AmrIce& a_amrIce,
- int a_level,
- Stage a_stage)
-{
-
-  Real time = a_amrIce.time();
-  bool calvingActive = (time >= m_startTime && time < m_endTime);
-  calvingActive = false;
-  pout() << " time = " << time 
-	 << " m_startTime = " <<  m_startTime
-	 << " m_endTime = " <<  m_endTime
-	 << "calvingActive = " << calvingActive
-	 << std::endl;
-  if (true || calvingActive)
-    {
-      const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
-      const LevelData<FArrayBox>& proximity = *a_amrIce.groundingLineProximity(a_level);
-      const LevelData<FArrayBox>& velocity = *a_amrIce.velocity(a_level);
-      for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
-	{
-	  const BaseFab<int>& mask = levelCoords.getFloatingMask()[dit];
-	  FArrayBox& thck = a_thickness[dit];
-	  FArrayBox& calved = a_calvedIce[dit];
-	  FArrayBox& added = a_addedIce[dit];
-	  FArrayBox& removed = a_removedIce[dit];
-	  const FArrayBox& prox = proximity[dit];
-	  const FArrayBox& vel = velocity[dit];
-	  Box b = thck.box();b &= prox.box();
-	  for (BoxIterator bit(b); bit.ok(); ++bit)
-	    {
-	      const IntVect& iv = bit();
-	      Real prevThck = thck(iv);
-	      Real vmod = std::sqrt(vel(iv,0)*vel(iv,0) + vel(iv,1)*vel(iv,1));
-	      if (prox(iv) < m_proximity && calvingActive && vmod > m_velocity)
-		{
-		  //thck(iv) *= 0.5; thck(iv) = max(thck(iv),10.0);
-		  thck(iv) = 0.0;
-		}
-	      if (mask(iv) == OPENSEAMASKVAL)
-		{
-		   thck(iv) = 0.0;
-		}
-	      if (mask(iv) == FLOATINGMASKVAL)
-		{
-		  thck(iv) = max(thck(iv),1.0);
-		}
-
-	      // Record gain/loss of ice
-	      if (calved.box().contains(iv))
-		{
-		  updateCalvedIce(thck(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
-		}
-
-	    }
-	}
-    }
-}
-
-
 
 CalvingModel* CalvingModel::parseCalvingModel(const char* a_prefix)
 {
@@ -327,50 +171,8 @@ CalvingModel* CalvingModel::parseCalvingModel(const char* a_prefix)
     {
       Real minThickness = 0.0;
       pp.get("min_thickness", minThickness );
-      ptr = new DeglaciationCalvingModelA
-	(0.0,  1.0e+10, minThickness, -1.2345678e+300, 1.2345678e+300);
-    }
-  else if (type == "DeglaciationCalvingModelA")
-    {  
-      Real minThickness = 0.0;
-      pp.get("min_thickness", minThickness );
-      Real calvingThickness = 0.0;
-      pp.get("calving_thickness", calvingThickness );
-      Real calvingDepth = 0.0;
-      pp.get("calving_depth", calvingDepth );
-      Real startTime = -1.2345678e+300;
-      pp.query("start_time",  startTime);
-      Real endTime = 1.2345678e+300;
-      pp.query("end_time",  endTime);
-      ptr = new DeglaciationCalvingModelA
-	(calvingThickness,  calvingDepth, minThickness, startTime, endTime); 
-    }
-  else if (type == "DeglaciationCalvingModelB")
-    {  
-      Real minThickness = 0.0;
-      pp.get("min_thickness", minThickness );
-      Real calvingThickness = 0.0;
-      pp.get("calving_thickness", calvingThickness );
-      Real calvingDepth = 0.0;
-      pp.query("calving_depth", calvingDepth );
-      Real startTime = -1.2345678e+300;
-      pp.query("start_time",  startTime);
-      Real endTime = 1.2345678e+300;
-      pp.query("end_time",  endTime);
-      ptr = new DeglaciationCalvingModelB
-	(calvingThickness,  calvingDepth, minThickness, startTime, endTime); 
-    }
-  else if (type == "ProximityCalvingModel")
-    {
-      Real proximity = 0.0;
-      pp.get("proximity", proximity );
-      Real velocity = 0.0;
-      pp.query("velocity", velocity );
-      Real startTime = -1.2345678e+300;
-      pp.get("startTime",  startTime);
-      Real endTime = 1.2345678e+300;
-      pp.get("endTime",  endTime);
-      ptr = new ProximityCalvingModel(proximity,velocity, startTime, endTime);
+      ptr = new ThicknessCalvingModel
+	(0.0,  1.0e+10, minThickness, -1.2345678e+300, 1.2345678e+300, false);
     }
   else if (type == "FlotationCalvingModel")
     {
@@ -405,41 +207,6 @@ CalvingModel* CalvingModel::parseCalvingModel(const char* a_prefix)
       pp.query("factor_mu_coef",factorMuCoef); 
       ptr = new ThicknessCalvingModel
 	(calvingThickness,  calvingDepth, minThickness, startTime, endTime, factorMuCoef); 
-    }
-  else if (type == "CliffCollapseCalvingModel")
-    {  
-      Real maxCliffHeight = 100.0;
-      pp.get("max_cliff_height", maxCliffHeight);
-      Real recessionRate = 0.0;
-      pp.get("recession_rate", recessionRate );
-      Real startTime = -1.2345678e+300;
-      pp.query("start_time",  startTime);
-      Real endTime = 1.2345678e+300;
-      pp.query("end_time",  endTime);
-      ptr = new CliffCollapseCalvingModel
-	(maxCliffHeight, recessionRate, startTime, endTime); 
-    }
-  else if (type == "MaxiumumExtentCalvingModel")  
-    {
-      Real startTime = -1.2345678e+300;
-      pp.query("start_time",  startTime);
-      Real endTime = 1.2345678e+300;
-      pp.query("end_time",  endTime);
-
-      Vector<Real> vect(SpaceDim,0.0);
-
-      pp.getarr("lowLoc",vect,0,SpaceDim);
-      RealVect lowLoc(D_DECL(vect[0], vect[1],vect[2]));      
-
-      pp.getarr("highLoc",vect,0,SpaceDim);
-      RealVect highLoc(D_DECL(vect[0], vect[1],vect[2]));      
-
-      MaximumExtentCalvingModel* Ptr = new MaximumExtentCalvingModel(highLoc,
-                                                                     lowLoc,
-                                                                     startTime,
-                                                                     endTime);
-      ptr = static_cast<CalvingModel*>(Ptr);
-
     }
   else if (type == "MaskedCalvingModel")
     {
@@ -508,130 +275,46 @@ CalvingModel* CalvingModel::parseCalvingModel(const char* a_prefix)
 
 
 void 
-DeglaciationCalvingModelB::applyCriterion
-(LevelData<FArrayBox>& a_thickness,
- LevelData<FArrayBox>& a_calvedIce,
- LevelData<FArrayBox>& a_addedIce,
- LevelData<FArrayBox>& a_removedIce,  
- LevelData<FArrayBox>& a_iceFrac, 
+ThicknessCalvingModel::evaluateCriterion
+(LevelData<BaseFab<bool > >& a_critical,
  const AmrIce& a_amrIce,
  int a_level,
  Stage a_stage)
 {
   
   const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
-  
+  const LevelData<FArrayBox>& iceFracData = *a_amrIce.iceFrac(a_level);
+  const LevelData<FArrayBox>& thckData = levelCoords.getH();
   for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
     {
       const BaseFab<int>& mask = levelCoords.getFloatingMask()[dit];
-      FArrayBox& thck = a_thickness[dit];
-      FArrayBox& calved = a_calvedIce[dit];
-      FArrayBox& added = a_addedIce[dit];
-      FArrayBox& removed = a_removedIce[dit];
-      Box b = thck.box();
-      
-      for (BoxIterator bit(b); bit.ok(); ++bit)
-	{
-	  const IntVect& iv = bit();
-	  Real prevThck = thck(iv);
-	  if (mask(iv) == OPENSEAMASKVAL)
-	    {
-	      thck(iv) = 0.0;
-	    }
-	  else if (mask(iv) == OPENLANDMASKVAL)
-	    {
-	      thck(iv) = 0.0;
-	    }
-          else if ((mask(iv) == FLOATINGMASKVAL) && (thck(iv) < m_calvingThickness))
-            {
-	      thck(iv) = m_minThickness;              
-            }
-	  else
-	    {
-	      thck(iv) = std::max(thck(iv),m_minThickness);
-	    }
-
-	  // Record gain/loss of ice
-	  if (calved.box().contains(iv))
-	    {
-	      updateCalvedIce(thck(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
-	    }
-	}
-    }
-}
-
-
-void 
-ThicknessCalvingModel::applyCriterion
-(LevelData<FArrayBox>& a_thickness,
- LevelData<FArrayBox>& a_calvedIce,
- LevelData<FArrayBox>& a_addedIce,
- LevelData<FArrayBox>& a_removedIce,  
- LevelData<FArrayBox>& a_iceFrac, 
- const AmrIce& a_amrIce,
- int a_level,
- Stage a_stage)
-{
-  
-  const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
-  for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
-    {
-      const BaseFab<int>& mask = levelCoords.getFloatingMask()[dit];
-      FArrayBox& iceFrac = a_iceFrac[dit];
-      FArrayBox& thck = a_thickness[dit];
-      FArrayBox& calved = a_calvedIce[dit];
-      FArrayBox& added = a_addedIce[dit];
-      FArrayBox& removed = a_removedIce[dit];
+      const FArrayBox& iceFrac = iceFracData[dit];
+      const FArrayBox& thck = thckData[dit];
       FArrayBox effectiveThickness(thck.box(), 1);
       effectiveThickness.copy(thck);
-
       if (m_factorMuCoef)
 	{
 	  effectiveThickness *= a_amrIce.muCoef(a_level)[dit];
 	}
-
-      
       Box b = thck.box();
       b &= iceFrac.box();
-      
+      b &= a_critical[dit].box();
       for (BoxIterator bit(b); bit.ok(); ++bit)
 	{
 	  const IntVect& iv = bit();          
-          // if iceFrac > 0, then rescale effectiveThickness
-          // by dividing by iceFrac value, which gives "actual" thickness
-          // in the partial cell. Probably eventually want to move this to 
-          // fortran
-	  Real prevThck = thck(iv);
-          if (iceFrac(iv,0) > 0.0)
-            {
-              effectiveThickness(iv,0) /= iceFrac(iv,0);
-            }
-            
-          if (mask(iv) == OPENLANDMASKVAL)
+	  if (iceFrac(iv,0) > 0.0)
 	    {
-	      thck(iv) = 0.0;
+	      effectiveThickness(iv,0) /= iceFrac(iv,0);
 	    }
-          // allow ice to spread into open sea regions too, if appropriate
+	  if (mask(iv) == OPENLANDMASKVAL)
+	    {
+	      a_critical[dit](iv) = true;
+	    }
           else if (((mask(iv) == FLOATINGMASKVAL) || (mask(iv) == OPENSEAMASKVAL))
                    && (effectiveThickness(iv) < m_calvingThickness))
             {
-              // note that we're setting thck here, not effectiveThickness, 
-              // which is a temporary
-              // also set the iceFrac to zero in these cells
-	      thck(iv) = m_minThickness; 
-              iceFrac(iv,0) = 0.0;
+	      a_critical[dit](iv) = true;
             }
-	  else
-	    {
-	      thck(iv) = std::max(thck(iv),m_minThickness);
-	    }
-
-	  // Record gain/loss of ice
-	  if (calved.box().contains(iv))
-	    {
-	      updateCalvedIce(thck(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
-	    }
-
 	}
     }
 }
@@ -640,88 +323,28 @@ ThicknessCalvingModel::applyCriterion
 
   
 //alter the thickness field at the end of a time step
-void
-MaximumExtentCalvingModel::applyCriterion(LevelData<FArrayBox>& a_thickness,
-					  LevelData<FArrayBox>& a_calvedIce,
-					  LevelData<FArrayBox>& a_addedIce,
-					  LevelData<FArrayBox>& a_removedIce,  
-					  LevelData<FArrayBox>& a_iceFrac, 
-					  const AmrIce& a_amrIce,
-					  int a_level,
-					  Stage a_stage)
-{
-
-  const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
-  const Real dx = a_amrIce.amrDx()[a_level];
-  
-  for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
-    {
-      const BaseFab<int>& mask = levelCoords.getFloatingMask()[dit];
-      FArrayBox& thck = a_thickness[dit];
-      FArrayBox& calved = a_calvedIce[dit];
-      FArrayBox& added = a_addedIce[dit];
-      FArrayBox& removed = a_removedIce[dit];
-      Box b = thck.box();
-      
-      for (BoxIterator bit(b); bit.ok(); ++bit)
-	{
-	  const IntVect& iv = bit();
-	  Real prevThck = thck(iv);
-          // compute location of cell center
-          RealVect loc(iv);          
-          loc += 0.5*RealVect::Unit;
-          loc *= dx;
-          
-          // check high and low extents
-          if ((mask(iv) == FLOATINGMASKVAL) || (mask(iv) == OPENSEAMASKVAL))
-            {
-              if (loc[0] <= m_lowLoc[0])
-                {
-                  thck(iv) = 0.0;
-                }
-              else if (loc[1] <= m_lowLoc[1])
-                {
-                  thck(iv) = 0.0;
-                }
-              else if (loc[0] > m_highLoc[0]) 
-                {
-                  thck(iv) = 0.0;
-                }
-              else if (loc[1] > m_highLoc[1])
-                {
-                  thck(iv) = 0.0;
-                }
-            } // end if floating or opensea
-
-	  // Record gain/loss of ice
-	  if (calved.box().contains(iv))
-	    {
-	      updateCalvedIce(thck(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
-	    }
-
-        } // end loop over cells
-  
-    }
-
-}
-
-
-
-
-//alter the thickness field at the end of a time step
 void 
-CompositeCalvingModel::applyCriterion(LevelData<FArrayBox>& a_thickness, 
-				      LevelData<FArrayBox>& a_calvedIce,
-				      LevelData<FArrayBox>& a_addedIce,
-				      LevelData<FArrayBox>& a_removedIce, 
-				      LevelData<FArrayBox>& a_iceFrac, 
+CompositeCalvingModel::evaluateCriterion(LevelData<BaseFab<bool > >& a_critical,
 				      const AmrIce& a_amrIce,
 				      int a_level,
 				      Stage a_stage)
 {
   for (int n=0; n<m_vectModels.size(); n++)
     {
-      m_vectModels[n]->applyCriterion( a_thickness, a_calvedIce, a_addedIce, a_removedIce, a_iceFrac,a_amrIce, a_level, a_stage);
+      LevelData<BaseFab<bool> > critical(a_critical.disjointBoxLayout(),1,a_critical.ghostVect());
+
+      m_vectModels[n]->evaluateCriterion( critical, a_amrIce, a_level, a_stage);
+      for (DataIterator dit(critical.disjointBoxLayout()); dit.ok(); ++dit)
+	{
+	  BaseFab<bool>& crit  = critical[dit];
+	  BaseFab<bool>& critAcc = a_critical[dit];
+	  const Box& b = critAcc.box();
+	  for (BoxIterator bit(b); bit.ok(); ++bit)
+	    {
+	      const IntVect& iv = bit();
+	      critAcc(iv) = critAcc(iv) || crit(iv);
+	    }
+	}
     }
 }
 
@@ -779,68 +402,30 @@ CompositeCalvingModel::~CompositeCalvingModel()
     }
 }
 
-void FlotationCalvingModel::applyCriterion
-(LevelData<FArrayBox>& a_thickness,
- LevelData<FArrayBox>& a_calvedIce,
- LevelData<FArrayBox>& a_addedIce,
- LevelData<FArrayBox>& a_removedIce,  
- LevelData<FArrayBox>& a_iceFrac, 
+void FlotationCalvingModel::evaluateCriterion
+(LevelData<BaseFab<bool > >& a_critical,
  const AmrIce& a_amrIce,
  int a_level,
  Stage a_stage)
 {
 
-  m_domainEdgeCalvingModel.applyCriterion( a_thickness, a_calvedIce, a_addedIce, a_removedIce, a_iceFrac,a_amrIce, a_level, a_stage);
+  m_domainEdgeCalvingModel.evaluateCriterion( a_critical, a_amrIce, a_level, a_stage);
   const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
   for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
     {
-      FArrayBox& thck = a_thickness[dit];
-      FArrayBox& calved = a_calvedIce[dit];
-      FArrayBox& added = a_addedIce[dit];
-      FArrayBox& removed = a_removedIce[dit];
+      BaseFab<bool>& crit = a_critical[dit];
       const BaseFab<int>& mask = levelCoords.getFloatingMask()[dit];
       const Box& b = levelCoords.grids()[dit];
       for (BoxIterator bit(b); bit.ok(); ++bit)
 	{
 	  const IntVect& iv = bit();
-	  Real prevThck = thck(iv);
 	  if (mask(iv) == FLOATINGMASKVAL)
 	    {
-	      thck(iv) = 0.0; 
+	      crit(iv) = true; 
 	    }
-
-	  // Record gain/loss of ice
-	  if (calved.box().contains(iv))
-	    {
-	      updateCalvedIce(thck(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
-	    }
-
 	}
     }
 }
-
-void
-CalvingModel::updateCalvedIce(const Real& a_thck, const Real a_prevThck, const int a_mask, Real& a_added, Real& a_calved, Real& a_removed)
-{
-
-  if (a_thck > a_prevThck)
-    {
-      a_added += (a_prevThck-a_thck);
-    }
-  else 
-    {
-      if ((a_mask == OPENSEAMASKVAL) || (a_mask == FLOATINGMASKVAL))
-	{
-	  a_calved += (a_prevThck-a_thck);
-	}
-      else
-	{
-	  a_calved += (a_prevThck-a_thck);
-	}
-    } 
-
-}
-
 
 VariableRateCalvingModel::VariableRateCalvingModel(ParmParse& a_pp)
 {
@@ -865,51 +450,31 @@ VariableRateCalvingModel::VariableRateCalvingModel(ParmParse& a_pp)
 
 }
 
-void VariableRateCalvingModel::applyCriterion
-(LevelData<FArrayBox>& a_thickness,
- LevelData<FArrayBox>& a_calvedIce,
- LevelData<FArrayBox>& a_addedIce,
- LevelData<FArrayBox>& a_removedIce,  
- LevelData<FArrayBox>& a_iceFrac, 
+void VariableRateCalvingModel::evaluateCriterion
+(LevelData<BaseFab<bool > >& a_critical,
  const AmrIce& a_amrIce,
  int a_level,
  Stage a_stage)
 {
 
-  (*m_domainEdgeCalvingModel).applyCriterion( a_thickness, a_calvedIce, a_addedIce, a_removedIce, a_iceFrac,a_amrIce, a_level, a_stage);
+  (*m_domainEdgeCalvingModel).evaluateCriterion( a_critical, a_amrIce, a_level, a_stage);
 
   const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
+  const LevelData<FArrayBox>& iceFracData = *a_amrIce.iceFrac(a_level);
   for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
     {
-      FArrayBox& thck = a_thickness[dit];
-      FArrayBox& calved = a_calvedIce[dit];
-      FArrayBox& added = a_addedIce[dit];
-      FArrayBox& removed = a_removedIce[dit];
-      FArrayBox& frac = a_iceFrac[dit];
+      const FArrayBox& frac = iceFracData[dit];
       const BaseFab<int>& mask = levelCoords.getFloatingMask()[dit];
+      BaseFab<bool>& crit = a_critical[dit];
       Real frac_eps = TINY_FRAC;
       const Box& b = levelCoords.grids()[dit];
       for (BoxIterator bit(b); bit.ok(); ++bit)
 	{
 	  const IntVect& iv = bit();
-	  Real prevThck = thck(iv);
-
-	  if (frac(iv) < frac_eps * frac_eps)
-	    {
-	      frac(iv) = 0.0;
-	    }
-	  
 	  if (frac(iv) < frac_eps)
 	    {
-	      thck(iv)=0.0;
+	      crit(iv) = true;
 	    }
-
-	  // Record gain/loss of ice
-	  if (calved.box().contains(iv))
-	    {
-	      updateCalvedIce(thck(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
-	    }
-
 	}
     }
 }
@@ -944,113 +509,6 @@ VariableRateCalvingModel::~VariableRateCalvingModel()
 }
 
 
-void 
-CliffCollapseCalvingModel::applyCriterion(LevelData<FArrayBox>& a_thickness,
-					  LevelData<FArrayBox>& a_calvedIce,
-					  LevelData<FArrayBox>& a_addedIce,
-					  LevelData<FArrayBox>& a_removedIce,  
-					  LevelData<FArrayBox>& a_iceFrac, 
-					  const AmrIce& a_amrIce,
-					  int a_level,
-					  Stage a_stage)
-{
-
-  // only do this at the end of a timestep
-  // (since that's the only time a time-integrated recession rate makes any sense)
-  if (a_stage == PostThicknessAdvection)
-    {
-      Real dt = a_amrIce.dt();
-      Real dx = a_amrIce.amrDx()[a_level];
-      
-      const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
-      const LevelData<FArrayBox>& surfaceHeight = levelCoords.getSurfaceHeight();
-      
-      for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
-	{
-	  const BaseFab<int>& mask = levelCoords.getFloatingMask()[dit];
-	  FArrayBox& iceFrac = a_iceFrac[dit];
-	  FArrayBox& thck = a_thickness[dit];
-	  FArrayBox& calved = a_calvedIce[dit];
-	  FArrayBox& added = a_addedIce[dit];
-	  FArrayBox& removed = a_removedIce[dit];
-	  const FArrayBox& surface = surfaceHeight[dit];
-	  FArrayBox effectiveSurface(surface.box(),1);
-	  effectiveSurface.copy(surface);
-	  FArrayBox effectiveThickness(thck.box(), 1);
-	  effectiveThickness.copy(thck);
-	  Box b = thck.box();
-	  b &= iceFrac.box();
-	  
-	  // keep track of which cells we've already done in order to avoid double-counting
-	  BaseFab<int> alreadyDone(b,1);
-	  alreadyDone.setVal(0);
-	  
-	  Real phiNew;
-	  
-	  for (BoxIterator bit(b); bit.ok(); ++bit)
-	    {
-	      const IntVect& iv = bit();          
-	      // if iceFrac > 0, then rescale effectiveThickness
-	      // by dividing by iceFrac value, which gives "actual" thickness
-	      // in the partial cell. Probably eventually want to move this to 
-	      // fortran
-	      // also compute "effective surface", which is the upper surface height based
-	      // on the effective thickness rather than the cell-averaged thickness
-	      // Probably eventually want to move this to fortran
-	      Real prevThck = thck(iv);
-	      if (iceFrac(iv,0) > 0.0)
-		{
-		  effectiveThickness(iv,0) /= iceFrac(iv,0);
-		  effectiveSurface(iv,0) += effectiveThickness(iv,0) - thck(iv,0);	      
-		}
-	      
-	      // if ice is grounded, look at neighbors to see if there are any empty neighbors, then look at
-	      // surface differences.
-	      if (mask(iv) == GROUNDEDMASKVAL) 
-		{
-		  // loop over directions
-		  for (int dir=0; dir<SpaceDim; dir++)
-		    {
-		      IntVect shiftVect = BASISV(dir);
-		      IntVect ivp = iv + shiftVect;
-		      IntVect ivm = iv - shiftVect;
-		      
-		      // look in both high and low directions at once
-		      if (((mask(ivp,0) != GROUNDEDMASKVAL) && (mask(ivp,0) != OPENLANDMASKVAL) &&  ((effectiveSurface(iv,0) - effectiveSurface(ivp,0)) > m_maxCliffThickness)) ||
-			  ((mask(ivm,0) != GROUNDEDMASKVAL) && (mask(ivm,0) != OPENLANDMASKVAL) && ((effectiveSurface(iv,0) - effectiveSurface(ivm,0)) > m_maxCliffThickness)))
-			{
-			  // we have a cliff!  only adjust this cell if we haven't already
-			  if (alreadyDone(iv,0) == 0)
-			    {
-			      alreadyDone(iv,0) = 1;
-			      phiNew = iceFrac(iv,0) - m_recessionRate*dt/dx;
-			      // don't go below zero
-			      phiNew = Max(phiNew, 0.0);
-			      
-			      // note that we're setting thck here, not effectiveThickness, 
-			      // which is a temporary
-			      // also modify the iceMask to zero in these cells
-			      
-			      thck(iv,0) = thck(iv,0)*phiNew/iceFrac(iv,0);
-			      iceFrac(iv,0) = phiNew;
-			    } // end we haven't already done this one
-			} // end if we have a cliff
-		    } // end loop over directions
-		} // end if this cell is grounded (no floating cliffs)
-	      
-	      
-	      // Record gain/loss of ice
-	      if (calved.box().contains(iv))
-		{
-		  updateCalvedIce(thck(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
-		}
-	      
-	    } // end loop over cells in this box
-	} // end loop over grids on this level	  
-    } // end if we're at the post-advection stage
-}
-
-
 RateAuBuhatCalvingModel::RateAuBuhatCalvingModel(ParmParse& a_pp)
 {
       Real startTime = -1.2345678e+300;
@@ -1082,18 +540,14 @@ RateAuBuhatCalvingModel::RateAuBuhatCalvingModel(ParmParse& a_pp)
       
 }
 
-void RateAuBuhatCalvingModel::applyCriterion
-(LevelData<FArrayBox>& a_thickness,
- LevelData<FArrayBox>& a_calvedIce,
- LevelData<FArrayBox>& a_addedIce,
- LevelData<FArrayBox>& a_removedIce,  
- LevelData<FArrayBox>& a_iceFrac, 
+void RateAuBuhatCalvingModel::evaluateCriterion
+(LevelData<BaseFab<bool > >& a_critical,
  const AmrIce& a_amrIce,
  int a_level,
  Stage a_stage)
 {
   // No explicit criterion in this case, but m_domainEdgeCalvingModel applies.
-  (*m_domainEdgeCalvingModel).applyCriterion( a_thickness, a_calvedIce, a_addedIce, a_removedIce, a_iceFrac,a_amrIce, a_level, a_stage);
+  (*m_domainEdgeCalvingModel).evaluateCriterion( a_critical, a_amrIce, a_level, a_stage);
 }
 
 
@@ -1295,18 +749,14 @@ VonMisesCalvingModel::~VonMisesCalvingModel()
 }
 
 	
-void VonMisesCalvingModel::applyCriterion
-(LevelData<FArrayBox>& a_thickness,
- LevelData<FArrayBox>& a_calvedIce,
- LevelData<FArrayBox>& a_addedIce,
- LevelData<FArrayBox>& a_removedIce,  
- LevelData<FArrayBox>& a_iceFrac, 
+void VonMisesCalvingModel::evaluateCriterion
+(LevelData<BaseFab<bool > >& a_critical,
  const AmrIce& a_amrIce,
  int a_level,
  Stage a_stage)
 {
   // No explicit criterion in this case, but m_domainEdgeCalvingModel applies.
-  (*m_domainEdgeCalvingModel).applyCriterion( a_thickness, a_calvedIce, a_addedIce, a_removedIce, a_iceFrac,a_amrIce, a_level, a_stage);
+  (*m_domainEdgeCalvingModel).evaluateCriterion( a_critical, a_amrIce, a_level, a_stage);
 }
 
 

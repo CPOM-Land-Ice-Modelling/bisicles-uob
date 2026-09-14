@@ -27,17 +27,12 @@ public:
 
   enum Stage { Initialization, PreVelocitySolve, PostVelocitySolve, PostThicknessAdvection, PostRegrid, MAX_STAGE};
 
-  static void updateCalvedIce(const Real& a_thck, const Real a_prevThck, const int a_mask, Real& a_added, Real& a_calved, Real& a_removed);
 
-
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness,
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
- 			      LevelData<FArrayBox>& a_removedIce, 
-			      LevelData<FArrayBox>& a_iceFrac, 
-			      const AmrIce& a_amrIce,
-			      int a_level,
-			      Stage a_stage) = 0;
+  /// evaluate the calving criterion: sets critical to true where passed 
+  virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
+			      	const AmrIce& a_amrIce,
+			      	int a_level,
+			      	Stage a_stage) = 0;
 
 
   virtual ~CalvingModel(){};
@@ -70,18 +65,13 @@ class NoCalvingModel : public CalvingModel
 
 public:
 
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
-			      const AmrIce& a_amrIce,
-			      int a_level,
-			      Stage a_stage)
+  virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
+			      	const AmrIce& a_amrIce,
+			      	int a_level,
+			      	Stage a_stage)
   {
 
-  }
-
+  } 
  virtual CalvingModel* new_CalvingModel()
   {
     return new NoCalvingModel( *this);
@@ -91,73 +81,17 @@ public:
 };
 
 
-// A Deglaciation-only calving model which 
-// i. Makes calving irreversible : if a cell mask is open sea / land, set thickness
-//    there to zero. No need to worry about the velocity fields in cells
-//    which were previously calved.
-// ii. Sets any floating ice below a given thickness and in a given depth of
-//     ocean to zero thickness
-// iii. prevents thickness from dropping below a given thickness
-class DeglaciationCalvingModelA : public CalvingModel
-{
-
-public:
-
-
-  //alter the thickness field at the end of a time step
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
-			      const AmrIce& a_amrIce,
-			      int a_level,
-			      Stage a_stage);
-
-
-
-  DeglaciationCalvingModelA(const Real& a_calvingThickness,
-			    const Real& a_calvingOceanDepth,
-			    const Real& a_minThickness, 
-			    const Real& a_startTime, 
-			    const Real& a_endTime)
-    : m_calvingThickness(a_calvingThickness),
-      m_calvingOceanDepth(a_calvingOceanDepth),
-      m_minThickness(a_minThickness),
-      m_startTime(a_startTime),
-      m_endTime(a_endTime)
-  {
-    ;
-  }
-
-  virtual CalvingModel* new_CalvingModel()
-  {
-    return new DeglaciationCalvingModelA( *this);
-  }
-  
-
-  
-protected:
-  Real m_calvingThickness, m_calvingOceanDepth, m_minThickness, m_startTime, m_endTime;
-  
-private:
-  DeglaciationCalvingModelA();
-};
-
 /// Ensure open ocean on one or more domain edges
 class DomainEdgeCalvingModel :  public CalvingModel
 {
 
 public:
 
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
-			      const AmrIce& a_amrIce,
-			      int a_level,
-			      Stage a_stage);
+  virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
+				const AmrIce& a_amrIce,
+				int a_level,
+				Stage a_stage);
+
 
   DomainEdgeCalvingModel(const Vector<int>& a_frontLo,
 			 const Vector<int>& a_frontHi,
@@ -187,92 +121,6 @@ private:
 };
 
 
-///Calve ice based on proximity to the grounding line
-class ProximityCalvingModel : public CalvingModel
-{
-
-  Real m_proximity, m_velocity,  m_startTime, m_endTime;
-
-public:
-  ProximityCalvingModel(const Real& a_proximity, 
-			const Real& a_velocity,
-			const Real& a_startTime, 
-			const Real& a_endTime)
-    : m_proximity(a_proximity), 
-      m_velocity(a_velocity),
-      m_startTime(a_startTime), 
-      m_endTime(a_endTime)
-  {
-  }
- 
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
-			      const AmrIce& a_amrIce,
-			      int a_level,
-			      Stage a_stage);
- 
-
-
-  virtual CalvingModel* new_CalvingModel()
-  {
-    return new ProximityCalvingModel( *this);
-  }
-  
-};
-
-
-
-// A Deglacation-only calving model which 
-// i. Makes calving irreversible : if a cell mask is open sea / land, set thickness
-//    there to zero. No need to worry about the velocity fields in cells
-//    which were previously calved.
-// ii. Sets any floating ice below a given thickness to the min thickness in (iii) (this is where it differs from ModelA, which doesn't actually use the CalvingThickness)
-// iii. prevents thickness from dropping below a given thickness
-class DeglaciationCalvingModelB : public CalvingModel
-{
-
-public:
-
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
-			      const AmrIce& a_amrIce,
-			      int a_level,
-			      Stage a_stage);
-
-
-  DeglaciationCalvingModelB(const Real& a_calvingThickness,
-			    const Real& a_calvingOceanDepth,
-			    const Real& a_minThickness, 
-			    const Real& a_startTime, 
-			    const Real& a_endTime)
-    : m_calvingThickness(a_calvingThickness),
-      m_calvingOceanDepth(a_calvingOceanDepth),
-      m_minThickness(a_minThickness),
-      m_startTime(a_startTime),
-      m_endTime(a_endTime)
-  {
-    ;
-  }
-  virtual CalvingModel* new_CalvingModel()
-  {
-    return new DeglaciationCalvingModelB (*this); 
-  }
-
-protected:
-  Real m_calvingThickness, m_calvingOceanDepth, m_minThickness, m_startTime, m_endTime;
-  
-private:
-  DeglaciationCalvingModelB();
-};
-
-
-
 /// A  thickness-based calving model which should permit advance and retreat
 /** (i). Sets any floating ice below a given thickness and in a given depth of
          ocean to zero thickness
@@ -285,11 +133,7 @@ class ThicknessCalvingModel : public CalvingModel
 
 public:
 
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
+  virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
 			      const AmrIce& a_amrIce,
 			      int a_level,
 			      Stage a_stage);
@@ -322,49 +166,6 @@ private:
 };
 
 
-/// A calving model which enforces a maximum extent of the ice shelf
-class MaximumExtentCalvingModel : public CalvingModel
-{
-
-public:
-
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
-			      const AmrIce& a_amrIce,
-			      int a_level,
-			      Stage a_stage);
-  
-  MaximumExtentCalvingModel(const RealVect& a_highLoc,
-                            const RealVect& a_lowLoc,
-                            const Real& a_startTime, 
-                            const Real& a_endTime)
-    : m_startTime(a_startTime),
-      m_endTime(a_endTime),
-      m_highLoc(a_highLoc),
-      m_lowLoc(a_lowLoc)      
-  {
-    ;
-  }
-
-  virtual CalvingModel* new_CalvingModel()
-  {
-    return new MaximumExtentCalvingModel ( *this);
-  }
-
-  
-protected:
-  Real m_startTime, m_endTime;
-  RealVect m_highLoc, m_lowLoc;
-  
-private:
-  MaximumExtentCalvingModel();
-};
-
-
-
 /// Calving model which lets us compose multiple calving models
 /** Allows serial application of  multiple calving models (for example, FixedFrontCalvingModel plus ThicknessCalvingModel). The ordering here is likely important, so always perform operations starting with calving model 0, then 1, etc.
  */
@@ -383,11 +184,7 @@ public:
       }   
   }
    
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
+  virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
 			      const AmrIce& a_amrIce,
 			      int a_level,
 			      Stage a_stage);
@@ -433,11 +230,7 @@ class FlotationCalvingModel : public CalvingModel
 public:
 
   
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
+  virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
 			      const AmrIce& a_amrIce,
 			      int a_level,
 			      Stage a_stage);
@@ -464,55 +257,6 @@ private:
   
 };
 
-/// A calving model which implements the Pollard and DeConto cliff-collapse mechanism using the ice mask
-/** 
-   uses real-valued ice mask in AmrIce to account for partial cells
-   using the scheme described in the "Notes on MISOMIP Thickness-driven
-   Calving Law" in the doc directory -- recession due to cliff collapse is implemented by removing 
-   cell-averaged thickness along with cell area
-*/
-class CliffCollapseCalvingModel : public CalvingModel
-{
-
-public:
-
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
-			      const AmrIce& a_amrIce,
-			      int a_level,
-			      Stage a_stage);
-
-
-  CliffCollapseCalvingModel(const Real& a_maxCliffThickness,
-			    const Real& a_recessionRate,
-			    const Real& a_startTime, 
-			    const Real& a_endTime)
-    : m_maxCliffThickness(a_maxCliffThickness),
-      m_recessionRate(a_recessionRate),
-      m_startTime(a_startTime),
-      m_endTime(a_endTime)
-  {
-    ;
-  }
-
-  virtual CalvingModel* new_CalvingModel()
-  {
-    return new CliffCollapseCalvingModel (*this); 
-  }
-
-  
-protected:
-  Real m_maxCliffThickness, m_recessionRate, m_startTime, m_endTime;
-
-private:
-  CliffCollapseCalvingModel();
-  
-};
-
-
 /// A Calving model that provides a simple rate
 /**
    The rate is cell-centred (which fits with the 
@@ -528,11 +272,7 @@ class VariableRateCalvingModel : public CalvingModel
 
 public:
 
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
- 			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
+  virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
 			      const AmrIce& a_amrIce,
 			      int a_level,
 			      Stage a_stage);
@@ -570,11 +310,7 @@ class RateAuBuhatCalvingModel : public CalvingModel
   
 public:
 
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
- 			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
+  virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
 			      const AmrIce& a_amrIce,
 			      int a_level,
 			      Stage a_stage);
@@ -622,11 +358,7 @@ class VonMisesCalvingModel : public CalvingModel
 
 public:
 
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
- 			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,
-			      LevelData<FArrayBox>& a_iceFrac, 
+  virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
 			      const AmrIce& a_amrIce,
 			      int a_level,
 			      Stage a_stage);

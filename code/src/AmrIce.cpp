@@ -5467,15 +5467,51 @@ void AmrIce::applyCalvingCriterion(CalvingModel::Stage a_stage)
 
   
   //allow calving model to modify geometry 
+  Real min_thickness(0.0);
+  ParmParse pp("CalvingModel");
+  pp.query("min_thickness",min_thickness);
+  Real min_frac(0.0);
+  if (min_thickness > 0) min_frac = TINY_FRAC;
+  
   for (int lev=0; lev<= m_finest_level; lev++)
     {
       LevelData<FArrayBox>& thck = m_vect_coordSys[lev]->getH();
       LevelData<FArrayBox>& frac = *m_iceFrac[lev];
+      const LevelData<BaseFab<int> >& mask = m_vect_coordSys[lev]->getFloatingMask();
       LevelData<FArrayBox>& calvedIce = *m_calvedIceThickness[lev];
-      LevelData<FArrayBox>& addedIce = *m_addedIceThickness[lev];
-      LevelData<FArrayBox>& removedIce = *m_removedIceThickness[lev];
-      m_calvingModelPtr->applyCriterion(thck, calvedIce, addedIce, removedIce, frac, *this, lev, a_stage);	  
- 
+      LevelData<BaseFab<bool> > critical(m_amrGrids[lev], 1, thck.ghostVect());
+      for (DataIterator dit(m_amrGrids[lev]); dit.ok(); ++dit)
+	{
+	  critical[dit].setVal(false);
+	}
+      m_calvingModelPtr->evaluateCriterion(critical, *this, lev, a_stage);
+      for (DataIterator dit(m_amrGrids[lev]); dit.ok(); ++dit)
+      {
+	Box b = mask[dit].box();
+	b &= thck[dit].box();
+	b &= frac[dit].box();
+	b &= calvedIce[dit].box();
+	for (BoxIterator bit(b); bit.ok(); ++bit)
+	{
+	 	const IntVect& iv = bit();
+		Real prevThck = thck[dit](iv);
+		if (critical[dit](iv))
+		{
+			thck[dit](iv) = std::min(thck[dit](iv),min_thickness);
+			frac[dit](iv) = std::min(frac[dit](iv),min_frac);
+		}
+		if ((mask[dit](iv) == GROUNDEDMASKVAL) || mask[dit](iv) == FLOATINGMASKVAL)
+		{	
+			thck[dit](iv) = std::max(thck[dit](iv), min_thickness);
+			frac[dit](iv) = std::max(frac[dit](iv), min_frac);
+		}
+		// Record gain/loss of ice (mirrors the old CalvingModel::updateCalvedIce)
+		if (thck[dit](iv) < prevThck)
+		{
+			calvedIce[dit](iv) += (prevThck - thck[dit](iv));
+		}
+	}
+      }	      
     }
   
   Real calved_volume = computeSum(m_calvedIceThickness,  m_refinement_ratios,
