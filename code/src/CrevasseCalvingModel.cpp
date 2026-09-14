@@ -361,23 +361,26 @@ void BennCalvingModel::computeRemnant(LevelData<FArrayBox>& a_remnant,
       for (BoxIterator bit(b);bit.ok();++bit)
 	{
 	  const IntVect& iv = bit();
-	  if (s(iv) > m_criticalStress) //if in (sufficient) tension 
+	  Real Ds = 0.0;
+	  Real Db = 0.0;
+	  if (s(iv) > m_criticalStress) //crevasses open only if in (sufficient) tension 
 	     {
-		Real Ds = s(iv) / (grav*rhoi) + rhow/rhoi * wd(iv);
-
-	  	if (m_includeBasalCrevasses)
-	    	{
-	      	  //explicit basal crevasse depth calculation
-	      	  Real Db = ((rhoi/(rhoo-rhoi)) * ( s(iv) /(grav*rhoi) - hab(iv)));
-	      	  remnant(iv) = std::max( 0.0, thck(iv) - f(iv)*(Ds -  Db));
-	        }	
-	       else
-	        {
-	         //assume full thickness fracture if surface crevasses reach sea-level
-	         remnant(iv) = std::max( 0.0, usrf(iv) - f(iv)*Ds);
-		}
-	     } // end tension
-	  } // end loop over cells
+	       Ds = s(iv) / (grav*rhoi) + rhow/rhoi * wd(iv);
+	       Db = ((rhoi/(rhoo-rhoi)) * ( s(iv) /(grav*rhoi) - hab(iv)));
+	     }  // end tension
+	  
+	  if (m_includeBasalCrevasses)
+	    {
+	      //explicit basal crevasse depth calculation
+	      remnant(iv) = std::max( 0.0, thck(iv) - f(iv)*(Ds -  Db));
+	    }	
+	  else
+	    {
+	      //assume full thickness fracture if surface crevasses reach sea-level
+	      remnant(iv) = std::max( 0.0, usrf(iv) - f(iv)*Ds);
+	    }
+	  
+	} // end loop over cells
     } // end loop over grid patches
   a_remnant.exchange();	
 }
