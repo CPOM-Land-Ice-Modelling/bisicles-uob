@@ -2677,7 +2677,7 @@ AmrIce::computeThicknessSources(Real a_dt)
       for ( DataIterator dit(m_amrGrids[lev]); dit.ok(); ++dit)
 	{
 	  de_nan( (*m_surfaceThicknessSource[lev])[dit]);
-	  de_nan( (*m_surfaceThicknessSource[lev])[dit]);
+	  de_nan( (*m_basalThicknessSource[lev])[dit]);
 	}
     }
 }
