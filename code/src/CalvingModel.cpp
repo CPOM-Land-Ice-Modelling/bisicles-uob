@@ -67,81 +67,6 @@ VariableRateCalvingModel::getCalvingRate(LevelData<FArrayBox>& a_calvingRate, co
 }
 
 
-void DomainEdgeCalvingModel::evaluateCriterion
-(LevelData<BaseFab<bool > >& a_critical,
- const AmrIce& a_amrIce,
- int a_level,
- Stage a_stage)
-{
-
-  const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
-  const DisjointBoxLayout& grids = levelCoords.grids();
-  const ProblemDomain domain = grids.physDomain();
-  const LevelData<BaseFab<int> >& levelMask = levelCoords.getFloatingMask();
-  const IntVect ghost = a_critical.ghostVect();
-  DataIterator dit = grids.dataIterator();
-  for (dit.begin(); dit.ok(); ++dit)
-    {
-      for (int dir=0; dir<SpaceDim; dir++)
-	{
-	  if (!domain.isPeriodic(dir))
-	    {
-
-	      if (m_frontLo[dir] > 0)
-		{
-		  Box loBox = adjCellLo(domain,dir,ghost[dir]);
-                  // (DFM 5-25-15) grow in transverse direction
-                  // to ensure that we don't wind up with corner
-                  // cells with ice in them
-                  IntVect transverseVect = ghost;
-                  transverseVect[dir] = 0;
-                  loBox.grow(transverseVect);
-		  loBox &= a_critical[dit].box();
-		  for (BoxIterator bit(loBox); bit.ok(); ++bit)
-		    {
-		      const IntVect& iv = bit();
-		      a_critical[dit](iv) = true;
-		    }
-		}
-	      
-	      if (m_frontHi[dir] > 0)
-		{
-		  Box hiBox = adjCellHi(domain,dir,ghost[dir]);
-                  // (DFM 5-25-15) grow in transverse direction
-                  // to ensure that we don't wind up with corner
-                  // cells with ice in them
-                  IntVect transverseVect = ghost;
-                  transverseVect[dir] = 0;
-                  hiBox.grow(transverseVect);
-		  hiBox &= a_critical[dit].box();
-		  for (BoxIterator bit(hiBox); bit.ok(); ++bit)
-		    {
-		      const IntVect& iv = bit();
-		      a_critical[dit](iv) = true;
-		    }
-		} 
-	    } // end if (!domain.isPeriodic(dir))
-	} // end loop over dirs
-      
-      const BaseFab<int>& mask = levelMask[dit];
-      const Box& b = grids[dit];
-      for (BoxIterator bit(b); bit.ok(); ++bit)
-	{
-	  const IntVect& iv = bit();
-	  if (m_preserveSea && mask(iv) == OPENSEAMASKVAL)
-	    {
-	      a_critical[dit](iv) = true;
-	    }
-	  else if (m_preserveLand && mask(iv) == OPENLANDMASKVAL)
-	    {
-	      a_critical[dit](iv) = true;
-	    }
-	}
-
-    } // end loop over boxes
-
-}
-
 CalvingModel* CalvingModel::parseCalvingModel(const char* a_prefix)
 {
 
@@ -156,36 +81,16 @@ CalvingModel* CalvingModel::parseCalvingModel(const char* a_prefix)
     }
   else if (type == "DomainEdgeCalvingModel")
     {
-      Vector<int> frontLo(2,false); 
-      pp.getarr("front_lo",frontLo,0,frontLo.size());
-      Vector<int> frontHi(2,false);
-      pp.getarr("front_hi",frontHi,0,frontHi.size());
-      bool preserveSea = false;
-      pp.query("preserveSea",preserveSea);
-      bool preserveLand = false;
-      pp.query("preserveLand",preserveLand);
-      ptr = new DomainEdgeCalvingModel
-	(frontLo, frontHi,preserveSea,preserveLand);
+      pout() << "DomainEdgeCalvingModel deprecated, but probably everthing will work as before" << std::endl;
+      ptr = new NoCalvingModel;
     }
   else if (type == "FixedFrontCalvingModel")
     {
-      Real minThickness = 0.0;
-      pp.get("min_thickness", minThickness );
-      ptr = new ThicknessCalvingModel
-	(0.0,  1.0e+10, minThickness, -1.2345678e+300, 1.2345678e+300, false);
+      ptr = new FixedFrontCalvingModel();
     }
   else if (type == "FlotationCalvingModel")
     {
-      Vector<int> frontLo(2,false); 
-      pp.getarr("front_lo",frontLo,0,frontLo.size());
-      Vector<int> frontHi(2,false);
-      pp.getarr("front_hi",frontHi,0,frontHi.size());
-      bool preserveSea = false;
-      pp.query("preserveSea",preserveSea);
-      bool preserveLand = false;
-      pp.query("preserveLand",preserveLand);
-      ptr = new FlotationCalvingModel
-	(frontLo, frontHi,preserveSea,preserveLand);
+      ptr = new FlotationCalvingModel();
     }
   else if (type == "BennCalvingModel")
     {
@@ -262,7 +167,6 @@ CalvingModel* CalvingModel::parseCalvingModel(const char* a_prefix)
     }
    else if (type == "RateProportionalToSpeedCalvingModel")
     {
-  
       ptr = new RateAuBuhatCalvingModel(pp);
     }   
    else if (type == "VonMisesCalvingModel")
@@ -320,9 +224,33 @@ ThicknessCalvingModel::evaluateCriterion
 }
 
 
-
-  
-//alter the thickness field at the end of a time step
+void FixedFrontCalvingModel::evaluateCriterion
+(LevelData<BaseFab<bool > >& a_critical,
+ const AmrIce& a_amrIce,
+ int a_level,
+ Stage a_stage)
+{
+  const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
+  for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
+    {
+      const BaseFab<int>& mask = levelCoords.getFloatingMask()[dit];
+      BaseFab<bool>& crit = a_critical[dit];
+      Box b = mask.box(); b &= crit.box();
+      for (BoxIterator bit(b); bit.ok(); ++bit)
+	{
+	  const IntVect& iv = bit();
+	  if (mask(iv) == OPENSEAMASKVAL)
+	    {
+	      crit(iv) = true;
+	    }
+	  else if (mask(iv) == OPENLANDMASKVAL)
+	    {
+	      crit(iv) = true;
+	    }
+	}
+    }
+}
+ 
 void 
 CompositeCalvingModel::evaluateCriterion(LevelData<BaseFab<bool > >& a_critical,
 				      const AmrIce& a_amrIce,
@@ -332,7 +260,10 @@ CompositeCalvingModel::evaluateCriterion(LevelData<BaseFab<bool > >& a_critical,
   for (int n=0; n<m_vectModels.size(); n++)
     {
       LevelData<BaseFab<bool> > critical(a_critical.disjointBoxLayout(),1,a_critical.ghostVect());
-
+      for (DataIterator dit(critical.disjointBoxLayout()); dit.ok(); ++dit)
+	{
+	  critical[dit].setVal(false);
+	}
       m_vectModels[n]->evaluateCriterion( critical, a_amrIce, a_level, a_stage);
       for (DataIterator dit(critical.disjointBoxLayout()); dit.ok(); ++dit)
 	{
@@ -409,7 +340,6 @@ void FlotationCalvingModel::evaluateCriterion
  Stage a_stage)
 {
 
-  m_domainEdgeCalvingModel.evaluateCriterion( a_critical, a_amrIce, a_level, a_stage);
   const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
   for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
     {
@@ -442,9 +372,6 @@ VariableRateCalvingModel::VariableRateCalvingModel(ParmParse& a_pp)
       a_pp.query("preserveSea",preserveSea);
       bool preserveLand = false;
       a_pp.query("preserveLand",preserveLand);
-
-      m_domainEdgeCalvingModel = new DomainEdgeCalvingModel(frontLo,frontHi,preserveSea,preserveLand);
-
       std::string prefix (a_pp.prefix());
       m_calvingRate = SurfaceFlux::parse( (prefix + ".CalvingRate").c_str());
 
@@ -457,7 +384,7 @@ void VariableRateCalvingModel::evaluateCriterion
  Stage a_stage)
 {
 
-  (*m_domainEdgeCalvingModel).evaluateCriterion( a_critical, a_amrIce, a_level, a_stage);
+ 
 
   const LevelSigmaCS& levelCoords = *a_amrIce.geometry(a_level);
   const LevelData<FArrayBox>& iceFracData = *a_amrIce.iceFrac(a_level);
@@ -487,18 +414,12 @@ CalvingModel* VariableRateCalvingModel::new_CalvingModel()
     ptr->m_startTime = m_startTime;
     ptr->m_endTime = m_endTime;
     ptr->m_calvingRate = m_calvingRate->new_surfaceFlux();
-    ptr->m_domainEdgeCalvingModel = new DomainEdgeCalvingModel(*m_domainEdgeCalvingModel);
     return ptr; 
   }
 
 VariableRateCalvingModel::~VariableRateCalvingModel()
 {
 
-  if (m_domainEdgeCalvingModel != NULL)
-    {
-      delete m_domainEdgeCalvingModel;
-      m_domainEdgeCalvingModel = NULL;
-    }
 
   if (m_calvingRate != NULL)
     {
@@ -515,18 +436,6 @@ RateAuBuhatCalvingModel::RateAuBuhatCalvingModel(ParmParse& a_pp)
       a_pp.query("start_time",  startTime);
       Real endTime = 1.2345678e+300;
       a_pp.query("end_time",  endTime);
- 
-      Vector<int> frontLo(2,false); 
-      a_pp.getarr("front_lo",frontLo,0,frontLo.size());
-      Vector<int> frontHi(2,false);
-      a_pp.getarr("front_hi",frontHi,0,frontHi.size());
-      bool preserveSea = false;
-      a_pp.query("preserveSea",preserveSea);
-      bool preserveLand = false;
-      a_pp.query("preserveLand",preserveLand);
-
-      m_domainEdgeCalvingModel = new DomainEdgeCalvingModel(frontLo,frontHi,preserveSea,preserveLand);
-
       std::string prefix (a_pp.prefix());
       m_proportion = SurfaceFlux::parse( (prefix + ".proportion").c_str());
       if (!m_proportion) m_proportion = new zeroFlux(); 
@@ -535,9 +444,7 @@ RateAuBuhatCalvingModel::RateAuBuhatCalvingModel(ParmParse& a_pp)
       m_independent_normal = false;
       a_pp.query("independent_normal",m_independent_normal); 
       m_vector = true; // this is essentially required
-      a_pp.query("vector", m_vector);
-
-      
+      a_pp.query("vector", m_vector);   
 }
 
 void RateAuBuhatCalvingModel::evaluateCriterion
@@ -546,8 +453,7 @@ void RateAuBuhatCalvingModel::evaluateCriterion
  int a_level,
  Stage a_stage)
 {
-  // No explicit criterion in this case, but m_domainEdgeCalvingModel applies.
-  (*m_domainEdgeCalvingModel).evaluateCriterion( a_critical, a_amrIce, a_level, a_stage);
+  // No explicit criterion in this case
 }
 
 
@@ -559,18 +465,11 @@ CalvingModel* RateAuBuhatCalvingModel::new_CalvingModel()
     ptr->m_endTime = m_endTime;
     ptr->m_proportion = m_proportion->new_surfaceFlux();
     ptr->m_independent = m_independent->new_surfaceFlux();
-    ptr->m_domainEdgeCalvingModel = new DomainEdgeCalvingModel(*m_domainEdgeCalvingModel);
     return ptr; 
   }
 
 RateAuBuhatCalvingModel::~RateAuBuhatCalvingModel()
 {
-
-  if (m_domainEdgeCalvingModel != NULL)
-    {
-      delete m_domainEdgeCalvingModel;
-      m_domainEdgeCalvingModel = NULL;
-    }
 
   if (m_proportion != NULL)
     {
@@ -690,17 +589,6 @@ VonMisesCalvingModel::VonMisesCalvingModel(ParmParse& a_pp)
       a_pp.query("start_time",  startTime);
       Real endTime = 1.2345678e+300;
       a_pp.query("end_time",  endTime);
- 
-      Vector<int> frontLo(2,false); 
-      a_pp.getarr("front_lo",frontLo,0,frontLo.size());
-      Vector<int> frontHi(2,false);
-      a_pp.getarr("front_hi",frontHi,0,frontHi.size());
-      bool preserveSea = false;
-      a_pp.query("preserveSea",preserveSea);
-      bool preserveLand = false;
-      a_pp.query("preserveLand",preserveLand);
-
-      m_domainEdgeCalvingModel = new DomainEdgeCalvingModel(frontLo,frontHi,preserveSea,preserveLand);
 
       std::string prefix (a_pp.prefix());
       m_scale = SurfaceFlux::parse( (prefix + ".scale").c_str());
@@ -720,18 +608,11 @@ CalvingModel* VonMisesCalvingModel::new_CalvingModel()
     ptr->m_endTime = m_endTime;
     ptr->m_scale = m_scale->new_surfaceFlux();
     ptr->m_independent = m_independent->new_surfaceFlux();
-    ptr->m_domainEdgeCalvingModel = new DomainEdgeCalvingModel(*m_domainEdgeCalvingModel);
     return ptr; 
   }
 
 VonMisesCalvingModel::~VonMisesCalvingModel()
 {
-
-  if (m_domainEdgeCalvingModel != NULL)
-    {
-      delete m_domainEdgeCalvingModel;
-      m_domainEdgeCalvingModel = NULL;
-    }
 
   if (m_scale != NULL)
     {
@@ -755,8 +636,6 @@ void VonMisesCalvingModel::evaluateCriterion
  int a_level,
  Stage a_stage)
 {
-  // No explicit criterion in this case, but m_domainEdgeCalvingModel applies.
-  (*m_domainEdgeCalvingModel).evaluateCriterion( a_critical, a_amrIce, a_level, a_stage);
 }
 
 

@@ -81,43 +81,21 @@ public:
 };
 
 
-/// Ensure open ocean on one or more domain edges
-class DomainEdgeCalvingModel :  public CalvingModel
+/// Fix the front, or rather, don't allow advance
+class FixedFrontCalvingModel : public CalvingModel
 {
 
 public:
 
   virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
-				const AmrIce& a_amrIce,
-				int a_level,
-				Stage a_stage);
-
-
-  DomainEdgeCalvingModel(const Vector<int>& a_frontLo,
-			 const Vector<int>& a_frontHi,
-			 bool a_preserveSea, 
-			 bool a_preserveLand)
-    
-    :m_frontLo(a_frontLo),m_frontHi(a_frontHi),
-     m_preserveSea(a_preserveSea),m_preserveLand(a_preserveLand)
-  {
-    ;
-  }
-
+			      	const AmrIce& a_amrIce,
+			      	int a_level,
+				 Stage a_stage);
 
   virtual CalvingModel* new_CalvingModel()
   {
-    return new  DomainEdgeCalvingModel( *this);
+    return new FixedFrontCalvingModel( *this);
   }
-  
-
-  
-protected:
-  Vector<int> m_frontLo;
-  Vector<int> m_frontHi;
-  bool m_preserveSea, m_preserveLand;
-private:
-  DomainEdgeCalvingModel();
 };
 
 
@@ -235,12 +213,7 @@ public:
 			      int a_level,
 			      Stage a_stage);
 
-  FlotationCalvingModel (const Vector<int>& a_frontLo,
-			 const Vector<int>& a_frontHi,
-			 bool a_preserveSea,
-			 bool a_preserveLand) 
-    : m_domainEdgeCalvingModel(a_frontLo,a_frontHi, 
-			       a_preserveSea, a_preserveLand)
+  FlotationCalvingModel () 
   {
     
   }
@@ -250,10 +223,7 @@ public:
     return new  FlotationCalvingModel (*this); 
   }
 
-  
-private:
-  DomainEdgeCalvingModel m_domainEdgeCalvingModel ;
-
+ 
   
 };
 
@@ -267,7 +237,6 @@ class VariableRateCalvingModel : public CalvingModel
 {
 
   Real m_startTime, m_endTime;
-  DomainEdgeCalvingModel* m_domainEdgeCalvingModel;
   SurfaceFlux* m_calvingRate;
 
 public:
@@ -302,7 +271,6 @@ class RateAuBuhatCalvingModel : public CalvingModel
 {
 
   Real m_startTime, m_endTime;
-  DomainEdgeCalvingModel* m_domainEdgeCalvingModel;
   SurfaceFlux* m_independent; // b 
   SurfaceFlux* m_proportion; // a
   bool m_vector; // cell-centred vector or scalar?
@@ -351,7 +319,6 @@ class VonMisesCalvingModel : public CalvingModel
 {
 
   Real m_startTime, m_endTime;
-  DomainEdgeCalvingModel* m_domainEdgeCalvingModel;
   SurfaceFlux* m_independent; // a 
   SurfaceFlux* m_scale; // sig_max**-1
   bool m_vector; // face-centred vector or cell-centred scalar?

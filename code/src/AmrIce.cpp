@@ -5470,10 +5470,11 @@ void AmrIce::applyCalvingCriterion(CalvingModel::Stage a_stage)
   Real min_thickness(0.0);
   ParmParse pp("CalvingModel");
   pp.query("min_thickness",min_thickness);
+  CH_assert(!(min_thickness < 0.0));
   Real min_frac(0.0);
-  if (min_thickness > 0) min_frac = TINY_FRAC;
-  
-  for (int lev=0; lev<= m_finest_level; lev++)
+  if (min_thickness > 1.0e-10) min_frac = TINY_FRAC;
+ 
+  for (int lev=0; lev <= m_finest_level; lev++)
     {
       LevelData<FArrayBox>& thck = m_vect_coordSys[lev]->getH();
       LevelData<FArrayBox>& frac = *m_iceFrac[lev];
@@ -5486,32 +5487,92 @@ void AmrIce::applyCalvingCriterion(CalvingModel::Stage a_stage)
 	}
       m_calvingModelPtr->evaluateCriterion(critical, *this, lev, a_stage);
       for (DataIterator dit(m_amrGrids[lev]); dit.ok(); ++dit)
-      {
-	Box b = mask[dit].box();
-	b &= thck[dit].box();
-	b &= frac[dit].box();
-	b &= calvedIce[dit].box();
-	for (BoxIterator bit(b); bit.ok(); ++bit)
 	{
-	 	const IntVect& iv = bit();
-		Real prevThck = thck[dit](iv);
-		if (critical[dit](iv))
+	  Box b = m_amrGrids[lev][dit];
+	  for (BoxIterator bit(b); bit.ok(); ++bit)
+	    {
+	      const IntVect& iv = bit();
+	      if (critical[dit](iv))
 		{
-			thck[dit](iv) = std::min(thck[dit](iv),min_thickness);
-			frac[dit](iv) = std::min(frac[dit](iv),min_frac);
+		  // Calving: record change in thck
+		  Real prevThck = thck[dit](iv);
+		  thck[dit](iv) = std::min(thck[dit](iv),min_thickness);
+		  frac[dit](iv) = std::min(frac[dit](iv),min_frac);
+		  calvedIce[dit](iv) += (prevThck - thck[dit](iv));
 		}
-		if ((mask[dit](iv) == GROUNDEDMASKVAL) || mask[dit](iv) == FLOATINGMASKVAL)
-		{	
-			thck[dit](iv) = std::max(thck[dit](iv), min_thickness);
-			frac[dit](iv) = std::max(frac[dit](iv), min_frac);
-		}
-		// Record gain/loss of ice (mirrors the old CalvingModel::updateCalvedIce)
-		if (thck[dit](iv) < prevThck)
+	      if ((mask[dit](iv) == GROUNDEDMASKVAL) || mask[dit](iv) == FLOATINGMASKVAL)
 		{
-			calvedIce[dit](iv) += (prevThck - thck[dit](iv));
+		  // restore min_thickness/min_frac where requested. bodge
+		  thck[dit](iv) = std::max(thck[dit](iv), min_thickness);
+		  frac[dit](iv) = std::max(frac[dit](iv), min_frac);
 		}
+	    }
+	}	      
+    }
+
+  // Boundaries:
+  //used to get delegated to DomainEdgeCalvingModel,
+  //but then almost every model had to rely on that...
+  Vector<int> frontLo(2,false); 
+  pp.queryarr("front_lo",frontLo,0,frontLo.size());
+  Vector<int> frontHi(2,false);
+  pp.queryarr("front_hi",frontHi,0,frontHi.size());
+  bool preserveSea = false;
+  pp.query("preserveSea",preserveSea);
+  bool preserveLand = false;
+  pp.query("preserveLand",preserveLand);
+  for (int lev=0; lev <= m_finest_level; lev++)
+    {
+      const LevelSigmaCS& levelCoords = *geometry(lev);
+      const DisjointBoxLayout& grids = levelCoords.grids();
+      const ProblemDomain domain = grids.physDomain();
+      LevelData<FArrayBox>& thck = m_vect_coordSys[lev]->getH();
+      LevelData<FArrayBox>& frac = *m_iceFrac[lev];
+      const IntVect ghost = thck.ghostVect();
+      for (DataIterator dit(m_amrGrids[lev]); dit.ok(); ++dit)
+	{
+	  for (int dir=0; dir<SpaceDim; dir++)
+	    {
+	      if (!domain.isPeriodic(dir))
+		{
+		  if (frontLo[dir] > 0)
+		    {
+		      Box loBox = adjCellLo(domain,dir,ghost[dir]);
+		      // (DFM 5-25-15) grow in transverse direction
+		      // to ensure that we don't wind up with corner
+		      // cells with ice in them
+		      IntVect transverseVect = ghost;
+		      transverseVect[dir] = 0;
+		      loBox.grow(transverseVect);
+		      loBox &= thck[dit].box();
+		      for (BoxIterator bit(loBox); bit.ok(); ++bit)
+			{
+			   const IntVect& iv = bit();
+			   thck[dit](iv) = 0.0;
+			   //frac[dit](iv) = 0.0;
+			}
+		    } // end  if (front_lo[dir] > 0)
+		  if (frontHi[dir] > 0)
+		    {
+		      Box hiBox = adjCellHi(domain,dir,ghost[dir]);
+		      // (DFM 5-25-15) grow in transverse direction
+		      // to ensure that we don't wind up with corner
+		      // cells with ice in them
+		      IntVect transverseVect = ghost;
+		      transverseVect[dir] = 0;
+		      hiBox.grow(transverseVect);
+		      hiBox &= thck[dit].box();
+		      for (BoxIterator bit(hiBox); bit.ok(); ++bit)
+			{
+			  const IntVect& iv = bit();
+			  thck[dit](iv) = 0.0;
+			  //frac[dit](iv) = 0.0;
+			}
+		    } //end if (m_frontHi[dir] > 0)
+		  
+		} // end if (!domain.isPeriodic(dir))
+	    } // end for (int dir=0; dir<SpaceDim; dir++)
 	}
-      }	      
     }
   
   Real calved_volume = computeSum(m_calvedIceThickness,  m_refinement_ratios,
@@ -5534,7 +5595,7 @@ void AmrIce::applyCalvingCriterion(CalvingModel::Stage a_stage)
   // usually a good time to eliminate remote ice
   if (m_eliminate_remote_ice) eliminateRemoteIce(a_stage);
 
-
+  
 
   
 }

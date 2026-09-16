@@ -89,8 +89,6 @@ void CrevasseCalvingModel::evaluateCriterion
  int a_level,
  Stage a_stage)
 {
-  //domain edge calving model always applies
-  m_domainEdgeCalvingModel->evaluateCriterion( a_critical, a_amrIce, a_level, a_stage);
   
   if  (a_stage == PostVelocitySolve)
     {
@@ -145,7 +143,7 @@ void CrevasseCalvingModel::evaluateCriterion
       LevelData<FArrayBox> remnant ;aliasLevelData(remnant, &locals, Interval(4,4));
       LevelData<FArrayBox> waterDepth;aliasLevelData(waterDepth, &locals, Interval(5,5));
       LevelData<FArrayBox> factor;aliasLevelData(factor, &locals, Interval(6,6));
-      // non-tension cells should never calve
+      // just in case computeRemnant is lazy
       for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
         {
           remnant[dit].setVal(1.0e+10);
@@ -156,54 +154,6 @@ void CrevasseCalvingModel::evaluateCriterion
       m_factor->evaluate(factor, a_amrIce, a_level, 0.0);
       computeRemnant(remnant, stressMeasure, thcke, usrfe, habe, waterDepth, factor, levelCoords);
       
-      //used to make sure that only cells within some distance of the open sea calve: 
-      LevelData<BaseFab<int> > grownOpenSea (levelCoords.grids(), 1 , IntVect::Unit);
-      for (DataIterator dit (levelCoords.grids()); dit.ok(); ++dit)
-	{
-	   if (m_calvingZoneLength > 0.0)
-	     {
-	       // a finite distance
-	       grownOpenSea[dit].copy(levelCoords.getFloatingMask()[dit]);
-	     }
-	   else
-	     {
-	       //any distance at all
-	       grownOpenSea[dit].setVal( OPENSEAMASKVAL );
-	     }
-	}
-
-      if (m_calvingZoneLength > 0.0)
-	{
-	  //grow the opensea mask by nCalve cells. 
-	  int niter = std::max( 1,  int( m_calvingZoneLength / a_amrIce.dx(a_level)[0])) ;
-	  LevelData<BaseFab<int> > prev (levelCoords.grids(), 1 , IntVect::Unit);
-	  
-	  for (int iter = 0; iter < niter; iter++)
-	    {
-	       for (DataIterator dit (levelCoords.grids()); dit.ok(); ++dit)
-		 {
-		   prev[dit].copy( grownOpenSea[dit]);
-		   Box b = levelCoords.grids()[dit];
-		   BaseFab<int>& m = grownOpenSea[dit];
-		   const BaseFab<int>& mp = prev[dit];
-		   for (BoxIterator bit(b); bit.ok(); ++bit)
-		     {
-		       const IntVect& iv = bit();
-		       if (m(iv) != OPENSEAMASKVAL)
-			 {
-			   bool t = false;
-			   t = t || (mp(iv + BASISV(0)) ==  OPENSEAMASKVAL);
-			   t = t || (mp(iv - BASISV(0)) ==  OPENSEAMASKVAL);
-			   t = t || (mp(iv + BASISV(1)) ==  OPENSEAMASKVAL);
-			   t = t || (mp(iv - BASISV(1)) ==  OPENSEAMASKVAL);
-			   if (t) m(iv) = OPENSEAMASKVAL;
-			 }
-		     }
-		 }
-	       grownOpenSea.exchange();
-	    }
-	}
-
       //mark critical cells.
       for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
 	{
@@ -212,7 +162,7 @@ void CrevasseCalvingModel::evaluateCriterion
 	  for (BoxIterator bit(b); bit.ok(); ++bit)
 	    {
 	      const IntVect& iv = bit(); 
-	      if ( (grownOpenSea[dit](iv) == OPENSEAMASKVAL ) && ( remnant[dit](iv) < TINY_THICKNESS ))
+	      if (  remnant[dit](iv) < TINY_THICKNESS )
 		{
 		  crit(iv) = true;
 		}
@@ -224,22 +174,7 @@ void CrevasseCalvingModel::evaluateCriterion
 
 CrevasseCalvingModel::CrevasseCalvingModel(ParmParse& a_pp)
 {
-  
-  //DomainEdgeCalvingModel parameters
-  Vector<int> frontLo(2,false); 
-  a_pp.getarr("front_lo",frontLo,0,frontLo.size());
-  Vector<int> frontHi(2,false);
-  a_pp.getarr("front_hi",frontHi,0,frontHi.size());
-  bool preserveSea = false;
-  a_pp.query("preserveSea",preserveSea);
-  bool preserveLand = false;
-  a_pp.query("preserveLand",preserveLand);
-  m_domainEdgeCalvingModel = new DomainEdgeCalvingModel(frontLo,frontHi,preserveSea,preserveLand);
-  
-  //Crevasse Model parameters
-  // m_waterDepth = 0.0;
-  //a_pp.get("waterDepth",m_waterDepth);
-
+ 
   std::string prefix (a_pp.prefix());
   
   m_waterDepth = SurfaceFlux::parse( (prefix + "crevasseWaterDepth").c_str());
@@ -266,6 +201,10 @@ CrevasseCalvingModel::CrevasseCalvingModel(ParmParse& a_pp)
   a_pp.query("includeBasalCrevasses",m_includeBasalCrevasses);
   m_calvingZoneLength = -1.0;
   a_pp.query("calvingZoneLength",m_calvingZoneLength);
+  if (m_calvingZoneLength > -1.0e-10)
+    {
+      pout() << "CrevasseCalvingModel:: calvingZoneLength deprecated and ignored " << std::endl;
+    }
   
   m_criticalStress = 0.0;
   a_pp.query("criticalStress",m_criticalStress);
@@ -299,10 +238,7 @@ CrevasseCalvingModel::CrevasseCalvingModel(ParmParse& a_pp)
 
 CrevasseCalvingModel::~CrevasseCalvingModel()
 {
-  if (m_domainEdgeCalvingModel != NULL)
-    {
-      delete m_domainEdgeCalvingModel; m_domainEdgeCalvingModel = NULL;
-    }
+  
   if (m_waterDepth != NULL)
     {
       delete m_waterDepth; m_waterDepth = NULL;
