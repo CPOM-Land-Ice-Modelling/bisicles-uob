@@ -469,16 +469,7 @@ AmrIce::~AmrIce()
 	  delete m_calvedIceThickness[lev];
 	  m_calvedIceThickness[lev] = NULL;
 	}
-      if (m_removedIceThickness[lev] != NULL)
-	{
-	  delete m_removedIceThickness[lev];
-	  m_removedIceThickness[lev] = NULL;
-	}
-      if (m_addedIceThickness[lev] != NULL)
-	{
-	  delete m_addedIceThickness[lev];
-	  m_addedIceThickness[lev] = NULL;
-	}
+
     
 
     }
@@ -1494,8 +1485,6 @@ AmrIce::initialize()
       m_calvedIceThickness.resize(m_max_level+1, NULL);
       m_fluxGL.resize(m_max_level+1, NULL);
       m_calvingVelocity.resize(m_max_level+1, NULL);
-      m_removedIceThickness.resize(m_max_level+1, NULL);
-      m_addedIceThickness.resize(m_max_level+1, NULL);
       m_divThicknessFlux.resize(m_max_level+1, NULL);
       m_internalEnergy.resize(m_max_level+1, NULL);
       m_tillWaterDepth.resize(m_max_level+1, NULL);
@@ -1827,28 +1816,8 @@ AmrIce::defineSolver()
  
 }
 
-//inline 
-//Real remainder(Real a, Real b)
-//{
-//  Real p = a/b; int i(p);
-//  return std::min( p - i, p - 1 - i);
-//}
-void setVal(LevelData<FArrayBox>& a_data, Real a_val)
-{
-  for (DataIterator dit(a_data.dataIterator()); dit.ok(); ++dit)
-	{
-	  a_data[dit].setVal(a_val);
-	}
-}
 
 
-void setToZero(Vector<LevelData<FArrayBox>*>& a_data)
-{
-  for (int lev=0; lev < a_data.size(); lev++)
-    {
-      if (a_data[lev]) setVal(*a_data[lev], 0.0);
-    }
-}
 
 void
 AmrIce::run2(Real a_max_time, int a_max_step)
@@ -2367,8 +2336,7 @@ AmrIce::run(Real a_max_time, int a_max_step)
 	    }	  
 #endif	  
 	  setToZero(m_calvedIceThickness); 
-	  setToZero(m_removedIceThickness);
-	  setToZero(m_addedIceThickness);
+
 
 	  if ((m_cur_step != 0) && (m_cur_step%m_regrid_interval ==0))
 	    {
@@ -3292,8 +3260,6 @@ AmrIce::levelSetup(int a_level, const DisjointBoxLayout& a_grids)
   levelAllocate(&m_calvedIceThickness[a_level],a_grids, 1, IntVect::Unit);setVal(*m_calvedIceThickness[a_level],0.0);
   levelAllocate(&m_fluxGL[a_level],a_grids, 1, IntVect::Unit); setVal(*m_fluxGL[a_level],0.0);
   levelAllocate(&m_calvingVelocity[a_level],a_grids, SpaceDim, IntVect::Unit); setVal(*m_calvingVelocity[a_level],0.0);
-  levelAllocate(&m_removedIceThickness[a_level],a_grids, 1, IntVect::Unit);
-  levelAllocate(&m_addedIceThickness[a_level],a_grids, 1, IntVect::Unit);
   levelAllocate(&m_deltaTopography[a_level],a_grids, 1, IntVect::Zero);
   // probably eventually want to do this differently
   RealVect dx = m_amrDx[a_level]*RealVect::Unit;
@@ -3601,7 +3567,7 @@ AmrIce::solveVelocityField(bool a_forceSolve, Real a_convergenceMetric)
 		  CH_assert(jfnkSolver != NULL);
 		  const bool linear = true;
 		  rc = jfnkSolver->solve( m_velocity, 
-					  m_calvedIceThickness, m_addedIceThickness, m_removedIceThickness,
+					  m_calvedIceThickness, 
 					  initialNorm,finalNorm,convergenceMetric, 
 					  linear, m_velRHS, m_velBasalC, vectC0, m_A, m_cellMuCoef,
 					  m_vect_coordSys, m_time, 0, m_finest_level);
@@ -3622,7 +3588,7 @@ AmrIce::solveVelocityField(bool a_forceSolve, Real a_convergenceMetric)
 		  m_velSolver->setMaxIterations(tol);
 
 		  rc = m_velSolver->solve(m_velocity, 
-					  m_calvedIceThickness, m_addedIceThickness, m_removedIceThickness,
+					  m_calvedIceThickness, 
 					  initialNorm,finalNorm,convergenceMetric,
 					  m_velRHS, m_velBasalC, vectC0, m_A, m_cellMuCoef,
 					  m_vect_coordSys, m_time, 0, m_finest_level);
@@ -3739,8 +3705,6 @@ AmrIce::solveVelocityField(bool a_forceSolve, Real a_convergenceMetric)
 	  notifyObservers(Observer::PreCalving);
 	  solverRetVal = m_velSolver->solve(m_velocity, 
 					    m_calvedIceThickness, 
-					    m_addedIceThickness,
-					    m_removedIceThickness,
 					    m_velocitySolveInitialResidualNorm, 
 					    m_velocitySolveFinalResidualNorm,
 					    a_convergenceMetric,
@@ -5614,8 +5578,7 @@ void AmrIce::eliminateRemoteIce(CalvingModel::Stage a_stage)
 			       m_amrDx[0], Interval(0,0), 0);
 
   IceUtility::eliminateRemoteIce(m_vect_coordSys, m_velocity, 
-				 m_calvedIceThickness, m_addedIceThickness,
-				 m_removedIceThickness,
+				 m_calvedIceThickness,
 				 m_amrGrids, m_amrDomains, 
 				 m_refinement_ratios, m_amrDx[0], 
 				 m_finest_level, m_eliminate_remote_ice_max_iter,
@@ -5739,7 +5702,8 @@ AmrIce::implicitThicknessCorrection(Real a_dt,
 	  
 	  for (DataIterator dit(levelGrids); dit.ok(); ++dit)
 	    {
-	      CH_assert( (*H[lev])[dit].norm(0,0,1) < HUGE_THICKNESS);
+	      Real maxH_post_diffusion =  (*H[lev])[dit].norm(0,0,1);
+	      CH_assert( maxH_post_diffusion< HUGE_THICKNESS);
 	      levelCoord_H[dit].copy( (*H[lev])[dit], 0, 0, 1);
 
 	      //put sensible values into the corners.

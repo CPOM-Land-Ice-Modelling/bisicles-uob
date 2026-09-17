@@ -83,6 +83,7 @@ using std::string;
 #include "NamespaceHeader.H"
 
 
+
 void AmrIce::setOutputOptions(ParmParse& a_pp)
 {
 
@@ -1891,8 +1892,6 @@ AmrIce::readCheckpointFile(HDF5Handle& a_handle)
   m_calvingVelocity.resize(m_max_level+1,NULL);
   m_basalThicknessSource.resize(m_max_level+1,NULL);
   m_calvedIceThickness.resize(m_max_level+1, NULL);
-  m_removedIceThickness.resize(m_max_level+1, NULL);
-  m_addedIceThickness.resize(m_max_level+1, NULL);
   m_deltaTopography.resize(m_max_level+1, NULL);
   m_divThicknessFlux.resize(m_max_level+1,NULL);
   m_velBasalC.resize(m_max_level+1,NULL);
@@ -2040,10 +2039,10 @@ AmrIce::readCheckpointFile(HDF5Handle& a_handle)
 	  m_calvedIceArea[lev] = new LevelData<FArrayBox>(levelDBL, 1, IntVect::Unit);
 	  m_basalThicknessSource[lev] = new LevelData<FArrayBox>(levelDBL,   1, IntVect::Unit) ;
 	  m_calvedIceThickness[lev] =  new LevelData<FArrayBox>(levelDBL,   1, IntVect::Unit) ;
+	  if (m_calvedIceThickness[lev]) setVal( *m_calvedIceThickness[lev], 0.0);
 	  m_fluxGL[lev] =  new LevelData<FArrayBox>(levelDBL,   1, IntVect::Unit) ;
+	  if (m_fluxGL[lev]) setVal( *m_fluxGL[lev], 0.0);
           m_calvingVelocity[lev] =  new LevelData<FArrayBox>(levelDBL,   SpaceDim, IntVect::Unit) ;
-	  m_removedIceThickness[lev] =  new LevelData<FArrayBox>(levelDBL,   1, IntVect::Unit) ;
-	  m_addedIceThickness[lev] =  new LevelData<FArrayBox>(levelDBL,   1, IntVect::Unit) ;
 	  m_deltaTopography[lev] =  new LevelData<FArrayBox>(levelDBL,   1, IntVect::Zero) ;
 	  m_divThicknessFlux[lev] =  new LevelData<FArrayBox>(levelDBL,   1, IntVect::Zero) ;
 	  m_diffusivity[lev] = new LevelData<FluxBox>(levelDBL, 1, IntVect::Zero);

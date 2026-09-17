@@ -444,8 +444,6 @@ private:
 
   void eliminateFastIce(Vector<LevelData<FArrayBox>* >& a_velocity,
 			Vector<LevelData<FArrayBox>* >& a_calvedIce,
-			Vector<LevelData<FArrayBox>* >& a_addedIce,
-			Vector<LevelData<FArrayBox>* >& a_removedIce,
 			Vector<LevelData<FArrayBox>* >& a_rhs,
 			Vector<RefCountedPtr<LevelSigmaCS > >& a_coordSys,
 			IceNonlinearViscousTensor&  a_current);
@@ -483,8 +481,6 @@ public:
   //IceVelocitySolver non-linear solve
   virtual int solve(Vector<LevelData<FArrayBox>* >& a_horizontalVel,
 		    Vector<LevelData<FArrayBox>* >& a_calvedIce,
-		    Vector<LevelData<FArrayBox>* >& a_addedIce,
-		    Vector<LevelData<FArrayBox>* >& a_removedIce,
 		    Real& a_initialResidualNorm, Real& a_finalResidualNorm,
 		    const Real a_convergenceMetric, 
                     const Vector<LevelData<FArrayBox>* >& a_rhs,
@@ -509,8 +505,6 @@ public:
   */ 
   virtual int solve(Vector<LevelData<FArrayBox>* >& a_horizontalVel,
 		    Vector<LevelData<FArrayBox>* >& a_calvedIce,
-		    Vector<LevelData<FArrayBox>* >& a_addedIce,
-		    Vector<LevelData<FArrayBox>* >& a_removedIce,
 		    Real& a_initialResidualNorm, Real& a_finalResidualNorm,
 		    const Real a_convergenceMetric,
 		    bool a_linear, 

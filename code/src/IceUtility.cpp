@@ -853,8 +853,6 @@ int IceUtility::eliminateFastIce
 (Vector<RefCountedPtr<LevelSigmaCS > >& a_coordSys,
  Vector<LevelData<FArrayBox>* >& a_vel,
  Vector<LevelData<FArrayBox>* >& a_calvedIce,
- Vector<LevelData<FArrayBox>* >& a_addedIce,
- Vector<LevelData<FArrayBox>* >& a_removedIce,
  const Vector<DisjointBoxLayout>& a_grids,
  const Vector<ProblemDomain>& a_domain,
  const Vector<int>& a_refRatio, Real a_crseDx,
@@ -879,8 +877,7 @@ int IceUtility::eliminateFastIce
 	  FArrayBox& H = a_coordSys[lev]->getH()[dit];
 	  const BaseFab<int>& mask = a_coordSys[lev]->getFloatingMask()[dit];
 	  FArrayBox& calved = (*a_calvedIce[lev])[dit];
-	  FArrayBox& added = (*a_addedIce[lev])[dit];
-	  FArrayBox& removed = (*a_removedIce[lev])[dit];
+
 	  FArrayBox& u = (*a_vel[lev])[dit];
 	  FArrayBox HH(H.box(),1); HH.copy(H);
 	  
@@ -900,7 +897,7 @@ int IceUtility::eliminateFastIce
 		    
 		  if (elim)
 		    {
-		      Real prevThck = H(iv);
+		      Real prevThck = std::max(0.0,H(iv));
 		      H(iv) = 0.0;
 		      D_DECL(u(iv,0) = 0 ,u(iv,1) = 0, u(iv,2) = 0);
 		      if (a_verbosity > 5)
@@ -908,13 +905,8 @@ int IceUtility::eliminateFastIce
 			  pout() << " (fast) eliminated level " << lev << " iv " << iv << std::endl;
 			}
 		      nEliminated++;
-		      // Record gain/loss of ice
-		      if (H(iv) > prevThck)
-		      added += (prevThck - H(iv));
-		    else
+		      // Record loss of ice
 		      calved += (prevThck - H(iv));
-		      //removed(iv) += (prevThck-H(iv));
-
 		    }
 		}
 	    }
@@ -951,7 +943,7 @@ int IceUtility::eliminateFastIce
       
       // eliminateRemoteIce will recompute surface elevation etc
       eliminateRemoteIce(a_coordSys,a_vel,
-			 a_calvedIce,a_addedIce,a_removedIce,
+			 a_calvedIce,
 			 a_grids,a_domain,a_refRatio, a_crseDx,
 			 a_finestLevel,a_maxIter,a_thinIceTol,  a_verbosity);
     }
@@ -972,8 +964,6 @@ void IceUtility::eliminateRemoteIce
 (Vector<RefCountedPtr<LevelSigmaCS > >& a_coordSys,
  Vector<LevelData<FArrayBox>* >& a_vel,
  Vector<LevelData<FArrayBox>* >& a_calvedIce,
- Vector<LevelData<FArrayBox>* >& a_addedIce,
- Vector<LevelData<FArrayBox>* >& a_removedIce,
  const Vector<DisjointBoxLayout>& a_grids,
  const Vector<ProblemDomain>& a_domain,
  const Vector<int>& a_refRatio, Real a_crseDx,
@@ -1076,15 +1066,13 @@ void IceUtility::eliminateRemoteIce
 	  const FArrayBox& thisPhi = levelPhi[dit];
 	  FArrayBox& h = levelCS.getH()[dit];
 	  FArrayBox& calved = (*a_calvedIce[lev])[dit];
-	  FArrayBox& added = (*a_addedIce[lev])[dit];
-	  FArrayBox& removed = (*a_removedIce[lev])[dit];
 	  FArrayBox& u = (*a_vel[lev])[dit];
 
 	  const BaseFab<int>& mask = levelCS.getFloatingMask()[dit];
 	  for (BoxIterator bit(levelGrids[dit]); bit.ok(); ++bit)
 	    {
 	      const IntVect& iv = bit();
-	      Real prevThck = h(iv);
+	      Real prevThck = std::max(0.0,h(iv));
 	      bool isolated = (mask(iv) == FLOATINGMASKVAL && thisPhi(iv) < 0.5);
 
 	      //while we are here, a single cell of grounded ice is a pain too
@@ -1100,11 +1088,8 @@ void IceUtility::eliminateRemoteIce
 		  if (a_verbosity > 5)
 		  pout() << " (remote) eliminated level " << lev << " iv " << iv << std::endl;
 	      	}
-	      // Record gain/loss of ice
-	      if (h(iv) > prevThck)
-	        added += (prevThck - h(iv));
-	      else
-	        calved += (prevThck - h(iv));
+	      // Record loss
+	      calved(iv) += (prevThck - h(iv));
 	    }
 	}
       levelCS.getH().exchange();
