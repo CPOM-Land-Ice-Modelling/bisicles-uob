@@ -349,6 +349,42 @@ public:
 
 };
 
+/**
+   Calving model that converts a calving criterion to a rate
+   Intended to prevent 'hole in the ice shelf' situations
+   that arise when (e.g) a calving criterion is based on
+   local stresses
+ */
+class CriterionToRateCalvingModel : public CalvingModel
+{
+  CalvingModel* m_criterion; // used to evaluate 'critical'
+  Real m_calving_rate; // calving rate that applied when critical = true
+
+public:
+
+  virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
+				 const AmrIce& a_amrIce,
+				 int a_level,
+				 Stage a_stage){};
+  
+  CriterionToRateCalvingModel (ParmParse& a_pp, std::string a_prefix);
+
+  virtual ~CriterionToRateCalvingModel();
+  
+  virtual CalvingModel* new_CalvingModel();
+
+  ///cell centred frontal ablation vector
+  virtual bool getCalvingVel (LevelData<FArrayBox>& a_centreCalvingVel,
+			      const LevelData<FArrayBox>& a_centreIceVel,
+			      const DisjointBoxLayout& a_grids,
+			      const AmrIce& a_amrIce,int a_level);
+    
+  //frontal ablation scalar
+  virtual void getCalvingRate(LevelData<FArrayBox>& a_calvingRate, 
+			      const AmrIce& a_amrIce,int a_level);
+
+};
+
 
 #include "NamespaceFooter.H"
 

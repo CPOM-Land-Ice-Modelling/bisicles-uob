@@ -173,7 +173,10 @@ CalvingModel* CalvingModel::parseCalvingModel(const char* a_prefix)
     {
       ptr = new VonMisesCalvingModel(pp);
     } 
-
+   else if (type == "CriterionToRateCalvingModel")
+    {
+      ptr = new CriterionToRateCalvingModel(pp,a_prefix);
+    } 
   return ptr;
 }
 
@@ -793,5 +796,103 @@ VonMisesCalvingModel::getCalvingRate
 
 }
 /**Von Mises Building Blocks**/
+
+CriterionToRateCalvingModel::CriterionToRateCalvingModel
+(ParmParse& a_pp, std::string a_prefix)
+{
+  std::string prefix = a_prefix + std::string(".CriterionCalvingModel");
+  m_criterion = parseCalvingModel(prefix.c_str());
+  if (m_criterion == NULL)
+    {
+      m_criterion = new NoCalvingModel;
+    }
+  m_calving_rate = 1.0e+4;
+  a_pp.query("calving_rate",m_calving_rate);
+}
+
+CriterionToRateCalvingModel::~CriterionToRateCalvingModel()
+{
+  if (m_criterion) delete m_criterion;
+}
+
+
+CalvingModel* CriterionToRateCalvingModel::new_CalvingModel()
+{
+  CriterionToRateCalvingModel* ptr = new CriterionToRateCalvingModel(*this);
+  ptr->m_calving_rate = m_calving_rate;
+  ptr->m_criterion = m_criterion->new_CalvingModel();
+  return static_cast<CalvingModel*>(ptr);
+}
+
+bool 
+CriterionToRateCalvingModel::getCalvingVel
+(LevelData<FArrayBox>& a_centreCalvingVel,
+ const LevelData<FArrayBox>& a_centreIceVel,
+ const DisjointBoxLayout& a_grids,
+ const AmrIce& a_amrIce,int a_level)
+{
+  LevelData<FArrayBox > rate(a_grids, 1, IntVect::Zero);
+  LevelData<BaseFab<bool> > critical(a_grids, 1, IntVect::Zero);
+
+  for (DataIterator dit(a_grids); dit.ok(); ++dit)
+    {
+      critical[dit].setVal(false);
+    }
+  m_criterion-> evaluateCriterion(critical,a_amrIce,a_level,PostVelocitySolve);
+  
+  for (DataIterator dit(a_grids); dit.ok(); ++dit)
+    {
+      const FArrayBox& f = (*a_amrIce.iceFraction(a_level))[dit];
+      const FArrayBox& u = a_centreIceVel[dit];
+      FArrayBox& v = a_centreCalvingVel[dit];
+      for (BoxIterator bit(rate[dit].box()); bit.ok(); ++bit)
+	{
+	  const IntVect& iv = bit();
+	  if (critical[dit](iv))
+	    {
+	      // n = grad(f)/|grad(f)|
+	      RealVect n(D_DECL(f(iv + BASISV(0)) - f(iv - BASISV(0)),
+				f(iv + BASISV(1)) - f(iv - BASISV(1)),
+				0.0));
+	      Real mod_n =  n.vectorLength();
+	      if (mod_n > 0.0) n /= mod_n;
+	      D_TERM(v(iv,0) = -2.0*u(iv,0) + n[0]*m_calving_rate;,
+		     v(iv,1) = -2.0*u(iv,1) + n[1]*m_calving_rate;,
+		     v(iv,2) = 0.0;);
+	    }
+	  else
+	    {
+	      D_TERM(v(iv,0) = 0.0;,
+		     v(iv,1) = 0.0;,
+		     v(iv,2) = 0.0;);
+	    }
+	}
+    }
+  return true;  
+}
+
+void CriterionToRateCalvingModel::getCalvingRate
+(LevelData<FArrayBox>& a_calvingRate, 
+ const AmrIce& a_amrIce,int a_level)
+{
+  LevelData<BaseFab<bool> > critical(a_calvingRate.disjointBoxLayout(), 1, IntVect::Zero);
+  for (DataIterator dit(critical.disjointBoxLayout()); dit.ok(); ++dit)
+    {
+      critical[dit].setVal(false);
+    }
+  m_criterion-> evaluateCriterion(critical,a_amrIce,a_level,PostVelocitySolve);  
+  for (DataIterator dit(critical.disjointBoxLayout()); dit.ok(); ++dit)
+    {
+      for (BoxIterator bit(critical[dit].box()); bit.ok(); ++bit)
+	{
+	  if (critical[dit](bit()))
+	    {
+	      a_calvingRate[dit](bit()) = m_calving_rate;
+	    }
+	}
+    }
+
+  
+}
 
 #include "NamespaceFooter.H"
