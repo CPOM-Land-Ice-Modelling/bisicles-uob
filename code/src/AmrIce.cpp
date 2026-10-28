@@ -310,6 +310,7 @@ AmrIce::setDefaults()
  
   m_evolve_thickness = true;
   m_evolve_ice_frac = true;
+  m_evolve_ice_frac_2 = false;
   
   m_evolve_velocity = true;
   m_evolve_topography_fix_surface = false;
@@ -912,6 +913,8 @@ AmrIce::initialize()
   m_evolve_ice_frac = ! thickness_evolution_inhibited;
   //but allow the user to modify that anyway
   ppAmr.query("evolve_ice_frac",m_evolve_ice_frac);
+  ppAmr.query("evolve_ice_frac_2",m_evolve_ice_frac_2);
+  m_evolve_ice_frac = m_evolve_ice_frac | m_evolve_ice_frac_2;	// m_evolve_ice_frac_2 => m_evolve_ice_frac
   
   
   // MJT - 2022/07/28 - Demonstration of change for UKESM to allow masking of stable sources
@@ -4183,6 +4186,106 @@ AmrIce::updateInvalidIceFrac(Vector<LevelData<FArrayBox> * > a_iceFrac)
     }
 }
 
+void
+AmrIce::computeFaceCalvingVel
+(LevelData<FluxBox>& a_faceCalvingVel,
+ const LevelData<FluxBox>& a_faceIceVel,
+ const DisjointBoxLayout& a_grids, int a_lev )
+{
+  // work out a face centered calving velocity.
+  // for now assuming that this will be anti-parallel
+  // to the ice velocity. Need to add option
+  // to be parallel to grad(thickness) or grad(iceFrac)
+
+  //some calving model supply a face centered calving vector directly. Well done them. 
+  //if (!m_calvingModelPtr->getCalvingVel(a_faceCalvingVel, a_faceIceVel, *m_velocity[a_lev], a_grids, *this, a_lev))
+    {
+      // calving rate is a cell-centered scalar and we need to interpolate
+      LevelData<FArrayBox> calvingRate(a_grids, 1, 2*IntVect::Unit);
+      LevelData<FArrayBox> calvingVel(a_grids, SpaceDim, 2*IntVect::Unit);
+      m_calvingModelPtr->getCalvingRate(calvingRate, *this, a_lev);
+      calvingRate.exchange(); //necessary?
+      //LevelData<FArrayBox> levelCCVel(a_grids, SpaceDim, IntVect::Unit);
+      //EdgeToCell( a_faceIceVel, levelCCVel);
+      //levelCCVel.exchange(); //necessary?
+      const LevelData<FArrayBox>& levelCCVel = *m_velocity[a_lev];
+      for (DataIterator dit(a_grids); dit.ok(); ++dit)
+	{
+	  const FArrayBox& vel = levelCCVel[dit];
+	  calvingVel[dit].setVal(0.0);//for the ghost cells outside the domain 
+	  for (BoxIterator bit(a_grids[dit]); bit.ok(); ++bit)
+	    {
+	      const IntVect& iv = bit();
+	      Real norm = std::sqrt(vel(iv,0)*vel(iv,0) + vel(iv,1)*vel(iv,1));
+	      calvingVel[dit](iv,0) = - calvingRate[dit](iv)*vel(iv,0) / (norm + TINY_NORM);
+	      calvingVel[dit](iv,1) = - calvingRate[dit](iv)*vel(iv,1) / (norm + TINY_NORM);
+	    }
+	}
+      calvingVel.exchange();
+      CellToEdge(calvingVel, a_faceCalvingVel);
+    }
+}
+
+
+void
+AmrIce::advectIceFrac(FArrayBox& a_frac,
+                      const FluxBox& a_faceVelIce,
+		      const FluxBox& a_faceVelCalving,
+		      const Box& a_box,
+                      Real a_dx, Real a_dt)
+{
+
+
+  Real empty = 1.0e-10; 
+  Real full = 1.0 - empty;
+  //compute ice advance (+ve), store in deltaA
+  FArrayBox deltaA(a_box, 1); deltaA.setVal(0.0);
+  for (int dir = 0; dir < SpaceDim; dir++)
+    {	      
+      FORT_ADVECTMASKA(CHF_FRA1(deltaA,0),
+		       CHF_CONST_FRA1(a_frac,0),
+		       CHF_CONST_FRA1(a_faceVelIce[dir],0),
+		       CHF_REAL(a_dx),
+		       CHF_REAL(a_dt),
+		       CHF_REAL(full),
+		       CHF_BOX(a_box),
+		       CHF_INT(dir));
+    } // end loop over directions
+
+  //compute calving advance (-ve), store in deltaC
+  FArrayBox deltaC(a_box, 1); deltaC.setVal(0.0);
+  for (int dir = 0; dir < SpaceDim; dir++)
+    {	      
+      FORT_ADVECTMASKC(CHF_FRA1(deltaC,0),
+		       CHF_CONST_FRA1(a_frac,0),
+		       CHF_CONST_FRA1(deltaA,0),
+		       CHF_CONST_FRA1(a_faceVelCalving[dir],0),
+		       CHF_REAL(a_dx),
+		       CHF_REAL(a_dt),
+		       CHF_REAL(empty),
+		       CHF_BOX(a_box),
+		       CHF_INT(dir));
+    } // end loop over directions
+  
+  // net advance
+  a_frac += deltaA;
+  a_frac += deltaC;
+
+  
+  for (BoxIterator bit(a_box); bit.ok(); ++bit)
+    {
+      const IntVect& iv = bit();
+      if (a_frac(iv) > full)
+	{
+	  a_frac(iv) = 1.0;
+	}
+      else if (a_frac(iv) < empty)
+	{
+	  a_frac(iv) = 0.0;
+	 
+	}
+    }
+}
 
 /// Non-conservative variant of AdvectPhysics (df/dt + v.grad f = s)
 class NCAdvectPhysics : public AdvectPhysics
@@ -4428,7 +4531,7 @@ void AmrIce::PGAdvectFrac(Vector<LevelData<FArrayBox>* >& a_f,
   
 }
 
-void AmrIce::advectIceFrac(Vector<LevelData<FArrayBox>* >& a_iceFrac,
+void AmrIce::advectIceFrac2(Vector<LevelData<FArrayBox>* >& a_iceFrac,
                       const Vector<LevelData<FluxBox>* >& a_faceVelAdvection,
                       Real a_dt)
 {
@@ -4438,7 +4541,7 @@ void AmrIce::advectIceFrac(Vector<LevelData<FArrayBox>* >& a_iceFrac,
   // uc is the calving vector.
   if (m_verbosity > 3) 
     {
-      pout() << "AmrIce::advectIceFrac" << std::endl;
+      pout() << "AmrIce::advectIceFrac2" << std::endl;
     }
 
   updateInvalidIceFrac(a_iceFrac);
@@ -4474,8 +4577,8 @@ void AmrIce::advectIceFrac(Vector<LevelData<FArrayBox>* >& a_iceFrac,
       unet[lev] = new LevelData<FArrayBox>(grids, SpaceDim, IntVect::Unit);
       bool success = m_calvingModelPtr->getCalvingVel(*m_calvingVelocity[lev],*m_velocity[lev],
 						  grids, *this, lev);
-      CH_assert(success); // all CalvingModels should now provide a vector
-
+      CH_assert(success); // only support Calving Models that provide a vector (rather than a simple rate)
+			  
       // populate ghosts: don't rely on Calving Model to do this 
       if (lev > 0)
 	{
@@ -4625,6 +4728,42 @@ void AmrIce::advectIceFrac(Vector<LevelData<FArrayBox>* >& a_iceFrac,
 }
 
 
+void
+AmrIce::advectIceFrac(Vector<LevelData<FArrayBox>* >& a_iceFrac,
+                      const Vector<LevelData<FluxBox>* >& a_faceVelAdvection,
+                      Real a_dt)
+{
+
+  if (m_evolve_ice_frac_2)
+    {
+      advectIceFrac2(a_iceFrac, a_faceVelAdvection, a_dt);
+    }
+  else
+    {
+      // original scheme (1D front tracking)
+      for (int lev=0; lev<= m_finest_level; lev++)
+	{
+	  LevelData<FArrayBox>& levelFrac = *a_iceFrac[lev]; // assume invalid regions up-to-date
+	  const LevelData<FluxBox>& levelFaceVel = *a_faceVelAdvection[lev];
+	  const DisjointBoxLayout& grids = levelFrac.getBoxes();
+	  
+	  // obtain face-centered calving vector
+	  LevelData<FluxBox> levelFaceCalvingVel(grids, 1, IntVect::Zero);
+	  computeFaceCalvingVel(levelFaceCalvingVel, levelFaceVel, grids, lev);
+	  
+	  
+	  for (DataIterator dit(grids); dit.ok(); ++dit)
+	    {
+	      advectIceFrac(levelFrac[dit], levelFaceVel[dit], levelFaceCalvingVel[dit],
+			    grids[dit], m_amrDx[lev], a_dt);
+	    }// end loop over boxes
+	  levelFrac.exchange();
+	} // end loop over levels
+    }
+  
+  updateInvalidIceFrac(a_iceFrac);
+  
+}
 
 
 // compute timestep

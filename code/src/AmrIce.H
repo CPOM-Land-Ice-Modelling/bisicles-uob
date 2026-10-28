@@ -738,8 +738,20 @@ protected:
 		    const Vector<LevelData<FArrayBox>* >& a_u,
 		    Real a_dt);
   
+  /// update real-valued ice fraction through advection from neighboring cells
+  void advectIceFrac2(Vector<LevelData<FArrayBox>* >& a_iceFrac,
+		      const Vector<LevelData<FluxBox>* >& a_faceVelAdvection,  
+		      Real a_dt);
 
+  /// single FAB update real-valued ice fraction through advection from neighboring cells 
+  void advectIceFrac(FArrayBox& a_iceMask, const FluxBox& a_faceVelAdvection,
+		     const FluxBox& a_faceVelCalving, const Box& a_box,   Real a_dx, Real a_dt);
   
+  // compute face centered calving velocity. Typically opposed to ice velocity. 
+  void computeFaceCalvingVel(LevelData<FluxBox>& a_faceCalvingVel,
+			     const LevelData<FluxBox>& a_faceIceVel,
+			     const DisjointBoxLayout& a_grids,
+			     int a_lev);
 
   /// update covered cells, ghost cells etc, of a_iceFrac
   void updateInvalidIceFrac(Vector<LevelData<FArrayBox> *> a_iceFrac);
@@ -1422,6 +1434,7 @@ protected:
 
   // if true, allow ice frac to change in time
   bool m_evolve_ice_frac;
+  bool m_evolve_ice_frac_2; // new version. Hopefully better.
   
   //if true, allow velocity field to change in time
   bool m_evolve_velocity;
