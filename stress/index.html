@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Stresses - BISICLES user documents</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Stresses";
+        var mkdocs_page_input_path = "stress.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c++.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> BISICLES user documents
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Building and running</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../readme/">Generic instructions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../sites/">Site notes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../trouble/">Common issues</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Executables</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../driver/">Main program (driver)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../filetools/">File tools</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cdriver/">C/Fortran API</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Run time options</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../io/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../geometry/">Ice sheet geometry</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Stresses</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#driving-stress">Driving stress</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#basal-stresses">Basal stresses</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#englacial-stresses">Englacial stresses</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../thermodynamics/">Thermodynamics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../velocity/">Ice velocity</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../surfaceflux/">Surface fluxes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../leveldatainterface/">LevelData interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pythoninterface/">Python interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="../readme.md#running-bisicles-on-a-simple-problem">MISMIP3D</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineisland/">Pine Island Glacier</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineislandinverse/">PIG inverse problem</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Data viz / analysis</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../libamrfile/">Python/R/MATLAB (libamrfile)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../visit/">VisIt</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">BISICLES user documents</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Run time options</li>
+      <li class="breadcrumb-item active">Stresses</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="bisicles-stresses">BISICLES stresses</h1>
+<p>Every BISICLES simulation requires both <a href="#basal">basal</a> and
+<a href="#basal">englacial</a> stress models to be defined. These relate basal and
+englacial stresses to the velocity field. There are also options to
+modify the <a href="#driving">driving</a> stress</p>
+<h2 id="driving-stress">Driving stress</h2>
+<p>The driving stress is determined by the geometry, however there are some
+options that can be used to modify it. Input geometry may lead to
+isolated ares of implausible driving stress, for example at tall ice
+cliffs. The option</p>
+<pre><code>  velocity_rhs.max_rhs_dx = 1.0e+10 #(Pa m) :any floating point number &gt; 1
+</code></pre>
+<p>is disabled by default but will ensure that rho  * g  * h  *  |grad(s) |
+ * dx  &lt; velocity_rhs.max_rhs_dx 1.0e+10 Pa m: 
+$\rho g h \nabla s$</p>
+<p>roughly speaking a value
+of1.0e+10 Pa m: corresponds to a 1 km high ice grounded cliff.</p>
+<p>Driving stresses are modified immediately upstream and downstream of the
+grounding line to avoid the combination of steep slopes and zero basal
+friction that would otherwise arise. This is the one-sided scheme
+described in Cornford, J. Comput. Phys. 2013, and is enabled by default.
+It can be disabled with.</p>
+<pre><code>  velocity_rhs.gl_correction = false # true is the default
+</code></pre>
+<h2 id="basal-stresses">Basal stresses</h2>
+<p>The basal stress model is broken down into a spatially varying basal
+friction <a href="#btrc">coefficient</a> beta ^2(x,y) and temperature dependent
+<a href="#bratefac">rate factor</a> A(T), which do not depend on velocity and a
+basal friction <a href="#btrr">relation</a> f ( C, u), where C =   beta ^2/A(T),
+which does. A (T) = 1.0 by default. The simplest model is the linear
+viscous sliding law tau_b = C u, more complex rules include the usual
+power law tau_b =   beta ^2  |u | ^(-2/3) u , and rules that depend on
+the effective pressure. The code also include an additional linear basal
+traction term, so that the final rule applied is tau_b = f( C, u) + C_0
+u with C_0 used to impose, for example, drag from rocky fjord walls.
+Note that whatever friction coefficient is chosen, it will only be
+applied to grounded ice or floating ice immediately adjacent to an ice
+free region whose upper surface lies above the lower surface of the ice
+(a fjord wall).</p>
+<h3 id="basal-friction-coefficient">Basal friction coefficient</h3>
+<p>If you have built the doxygen code documentation, the C++ class
+hierarchy underlying the basal friction coefficient is described at
+<a href="../code/doc/doxygen/html/classBasalFriction.html">classBasalFriction.md</a>.</p>
+<h4 id="floating-and-grounded-ice">Floating and grounded ice</h4>
+<p>By default, BISICLES sets beta ^2 = 0 for every cell whose center is
+grounded. Setting</p>
+<pre><code>  basal_friction.grounding_line_subdivision = 4 # (any integer &gt; 0, but 4 is recommended)
+</code></pre>
+<p>selects a sub-grid interpolation scheme, which proves useful in some
+circumstances (see e.g Cornford et at, Ann, Glac. 2016). The thickness
+above flotation is interpolated between cell centers to compute a
+grounded-ice fraction w, with  &lt; w  &lt; 1, which is used to weight
+beta ^2. At some point we may make this the default.</p>
+<p>The subgrid scheme typically means that a factor of two coarser mesh can
+be used. Note that BISICLES does not suffer from the much more severe
+truncation errors noted in Seroussi, The Cryopshere, 2014 when the
+subgrid scheme is not used: we attribute this to the one-sided
+difference scheme for the driving stress described in Cornford, J.
+Comput. Phys. 2013. This is enabled by default, but can be disabled with</p>
+<pre><code>  velocity_rhs.gl_correction = false # true is the default
+</code></pre>
+<h4 id="drag-from-rocky-walls">Drag from Rocky Walls</h4>
+<p>Floating Ice flowing between rocky walls (e.g Petermann Glacier)
+experiences some drag by default, the coefficient C_0 is computed from
+the basal friction coefficient that would apply if the ice was grounded,
+and from the contact areas between ice and rock. It is possible to
+increase this drag with a scalar parameter.</p>
+<pre><code>wall_drag.basic = true # default true
+wall_drag.extra = 0.0 # default 0.0
+</code></pre>
+<h4 id="drag-in-thin-ice-regions">Drag in thin ice regions</h4>
+<p>Realistic problems are sometimes made more difficult by the appearance
+of fast flowing thin ice, often far from the regions of interest, which
+tends to reduce the stable time step. This can sometimes be mitigated by
+imposing some additional drag in thin ice regions. Be careful with this
+parameter - it can easily slow down ice shelves.</p>
+<pre><code>thin_ice_drag.extra = 10.0 # default 0.0
+thin_ice_drag.thickness = 10.0 # default 0.0
+</code></pre>
+<h4 id="constant-friction">Constant Friction</h4>
+<p>The simplest meaningful beta ^2 is constant in space and time. E.g to
+set beta ^2 = 1000 on all grounded ice:</p>
+<pre><code>geometry.beta_type = constantBeta
+geometry.betaValue = 1.0e+3
+</code></pre>
+<h4 id="python-basal-friction">Python Basal Friction</h4>
+<p>See also the description of the <a href="../pythoninterface/">python
+interface</a>.</p>
+<p>If beta ^2 can be expressed as a simple function of <strong>local</strong> thickness
+and topography, the python interface can compute it. The major advantage
+of this method is that the python expression can be readily evaluated on
+whatever meshes the AMR scheme throws up without the need for
+interpolation. For example, create a function</p>
+<pre><code>#file foo.py
+import math
+
+def friction(x,y,t,thck,topg):
+    friction = 1.01e+3 + 1.0e+3 * math.sin(x * 1.0e+3)*math.sin(y * 1.0e+3)
+    return friction
+</code></pre>
+<p>in a python module and set</p>
+<pre><code>geometry.beta_type = Python
+PythonBasalFriction.module = foo
+PythonBasalFriction.function = friction
+</code></pre>
+<p>in the configuration file.</p>
+<h4 id="leveldata-basal-friction">LevelData Basal Friction</h4>
+<p>See also the description of the <a href="../leveldatainterface/">LevelData
+interface</a>.</p>
+<p>If beta ^2 cannot be expressed as a simple function, it might be
+represented as data on a uniform mesh. Typically, this will be the case
+if beta ^2 was computed from observations in some way. BISICLES will
+average or interpolate the data as needed as meshes are generated, with
+one caveat: the data mesh spacing must be compatible with the AMR
+scheme. Typically, the <strong>data level grid</strong> will usually have a
+resolution that coincides with one of the AMR levels. For example, to
+read the field btrc from a file basal.2d.hdf5:</p>
+<pre><code>geometry.beta_type = LevelData
+inputLevelData.frictionFile = basal.2d.hdf5
+inputLevelData.frictionName = btrc
+</code></pre>
+<p>It is also possible to use a number of files to make a time-dependent
+beta ^2. E.g,</p>
+<pre><code>geometry.beta_type = LevelData
+inputLevelData.frictionFileFormat = basal%4d.2d.hdf5
+inputLevelData.frictionFileStartTime = 0.0
+inputLevelData.frictionFileTimeStep = 1.0
+inputLevelData.frictionName = btrc
+</code></pre>
+<p>will interpolate data in time between the files
+basal0000.2d.hdf5,basal0001.2d.hdf5, ...</p>
+<h4 id="multileveldata-basal-friction">MultiLevelData Basal Friction</h4>
+<p>Essentially the same as having a LevelData basal friction coefficient,
+but with a non-uniform mesh. Tricky in practice, but, e.g</p>
+<pre><code>geometry.beta_type = MultiLevelData
+inputLevelData.frictionFile = basal.2d.hdf5
+inputLevelData.frictionName = btrc
+</code></pre>
+<h4 id="others">Others</h4>
+<p>Other beta ^2 options include sinusoidalBeta, sinusoidalBetay,
+twistyStreamx, singularStream, gaussianBump. These exist for testing to
+be carried out without the python interface: don 't worry about them.</p>
+<h3 id="basal-rate-factor">Basal rate factor</h3>
+<p>If you have built the doxygen code documentation, the C++ class
+hierarchy underlying the rate factor is described at
+<a href="../code/doc/doxygen/html/classRateFactor.html">classRateFactor.md</a></p>
+<h3 id="basal-friction-relation">Basal friction relation</h3>
+<p>If you have built the doxygen code documentation, the C++ class
+hierarchy underlying the basal friction relation is described at
+<a href="../code/doc/doxygen/html/classBasalFrictionRelation.html">classBasalFrictionRelation.md</a></p>
+<h4 id="power-law-basal-friction-relation">Power law basal friction relation</h4>
+<p>The power law basal friction relation covers rules of the form tau_b = C
+ |u | ^(m-1) u, which includes linear viscous sliding (m=1), and hard
+bed sliding (m=1/3), and yield stress sliding (m=0.9999, though this
+will not work well). For example, specify the common third power law by
+setting tau_b = C  |u | ^(-2/3) u</p>
+<pre><code>main.basalFrictionRelation = powerLaw
+BasalFrictionPowerLaw.m = 0.3333 # for m = 1/3
+BasalFrictionPowerLaw.includeEffectivePressure = false #optional false is the default
+</code></pre>
+<p>If</p>
+<pre><code>BasalFrictionPowerLaw.includeEffectivePressure = true
+</code></pre>
+<p>Then a factor hab ^m (where hab is the thickness above flotation) is
+introduced.</p>
+<h4 id="pressure-limited-basal-friction-relation">Pressure limited basal friction relation</h4>
+<p>The pressure limited law modifies another basal friction relation f(C,u)
+to ensure that basal traction cannot exceed the Coulomb friction,
+proportional to the effective pressure N. Two forms are implemented, the
+version from Tsai 2015, where  |tau_b | = min( a  * N, f(C,u) ), and the
+version from Leguy 2014 (also Schoof 2005 and Gagliardini 2007), where
+ |tau_b | =</p>
+<p>To choose Tsai 2015, set</p>
+<pre><code>main.basalFrictionRelation = pressureLimitedLaw
+BasalFrictionPressureLimitedLaw.coefficient = 0.5 #for example. Coulomb friction coefficient. should be 0 &lt; a &lt; 1 
+BasalFrictionPressureLimitedLaw.model = Tsai
+BasalFrictionPressureLimitedLaw.basalFrictionRelation = powerLaw
+BasalFrictionPowerLaw.m = 0.3333
+</code></pre>
+<p>To choose Leguy 2014, set</p>
+<pre><code>main.basalFrictionRelation = pressureLimitedLaw
+BasalFrictionPressureLimitedLaw.coefficient = 8.0e12  #for example
+BasalFrictionPressureLimitedLaw.model = Leguy
+BasalFrictionPressureLimitedLaw.basalFrictionRelation = powerLaw
+BasalFrictionPowerLaw.m = 0.3333
+</code></pre>
+<h2 id="englacial-stresses">Englacial stresses</h2>
+<p>The englacial stress model is broken down into a spatially varying
+<a href="#mucoef">stiffness factor</a> phi(x,y) and temperature dependent <a href="#ratefac">rate
+factor</a> A(T), which do not depend on velocity and a
+<a href="#mu">relation</a> f ( A, grad u), which does, to provide an effective
+viscosity phi f (A, grad u). The simplest model is a linear rheology
+(constant f). Ice sheet models will usually need either Glen 's flow law
+or a rule based on it such as the L1L2 rule (Schoof and Hindmarsh 2010).
+There is also an experimental rule that combines any other relation with
+a continuum damage model.</p>
+<h3 id="englacial-stiffness-mu-coefficient">Englacial stiffness (mu) coefficient</h3>
+<p>If you have built the doxygen code documentation, the C++ class
+hierarchy underlying the stiffness factor is described at
+<a href="../code/doc/doxygen/html/classMuCoefficient.html">classMuCoefficient.md</a></p>
+<h3 id="englacial-rate-factor">Englacial rate factor</h3>
+<p>If you have built the doxygen code documentation, the C++ class
+hierarchy underlying the rate factor is described at
+<a href="../code/doc/doxygen/html/classRateFactor.html">classRateFactor.md</a></p>
+<h3 id="englacial-constitutive-relation">Englacial Constitutive relation</h3>
+<p>The englacial constitutive relation has three roles. First, it computes
+the effective viscosity (mu) given the strain rate (e_ij) and rate
+factor (A), so that the stress components are given by t_ij = mu  *
+e_ij. Secondly, it computes the rate of strain heating (usually mu  *
+e_ij  * e_ji). Thirdly, it is currently responsible for reconstructing
+the velocity field u(x,y,z) from the basal velocity u_b(x,y), though
+this is slated for change when non-vertically integrated stresses are
+supported.</p>
+<p>If you have built the doxygen code documentation, the C++ class
+hierarchy underlying the englacial constitutive relation is described at
+<a href="../code/doc/doxygen/html/classConstitutiveRelation.html">classConstitutiveRelation.md</a></p>
+<h4 id="glen-s-flow-law">Glen 's flow law</h4>
+<p>To choose Glen 's flow law, set</p>
+<pre><code>main.ConstitutiveRelation = GlensLaw 
+GlensLaw.n = 3.0 # 3.0 is the default
+GlensLaw.epsSqr0 = 1.0e-12
+GlensLaw.delta = 0.0 #
+</code></pre>
+<h4 id="the-lll2-flow-law">The LlL2 flow law</h4>
+<p>The L1L2 law is a variant of Glen 's flow law used to approximate
+vertical shear strains in vertically integrated models.</p>
+<pre><code>main.ConstitutiveRelation = L1L2
+L1L2.n = 3.0 # 3.0 is the default
+L1L2.epsSqr0 = 1.0e-12
+L1L2.delta = 0.0 #
+L1L2.solverTolerance =1.0e-6
+L1L2.effectiveViscositySIAGradSLimit = 1.0e-2 # limit grad(s) in the mass flux calculation
+L1L2.additionalVelocitySIAGradSLimit = 1.0e+10 # limit grad(s) in the effective viscosity
+L1L2.additionalVelocitySIAOnly = false # default is true
+L1L2.startFromAnalyticMu = false       # can be true for n = 3
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../geometry/" class="btn btn-neutral float-left" title="Ice sheet geometry"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../thermodynamics/" class="btn btn-neutral float-right" title="Thermodynamics">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../geometry/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../thermodynamics/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

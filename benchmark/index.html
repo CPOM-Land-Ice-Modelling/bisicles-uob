@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>BISICLES solver benchmark executable - BISICLES user documents</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "BISICLES solver benchmark executable";
+        var mkdocs_page_input_path = "benchmark.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c++.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> BISICLES user documents
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Building and running</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../readme/">Generic instructions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../sites/">Site notes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../trouble/">Common issues</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Executables</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../driver/">Main program (driver)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../filetools/">File tools</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cdriver/">C/Fortran API</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Run time options</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../io/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../geometry/">Ice sheet geometry</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../stress/">Stresses</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../thermodynamics/">Thermodynamics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../velocity/">Ice velocity</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../surfaceflux/">Surface fluxes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../leveldatainterface/">LevelData interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pythoninterface/">Python interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="../readme.md#running-bisicles-on-a-simple-problem">MISMIP3D</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineisland/">Pine Island Glacier</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineislandinverse/">PIG inverse problem</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Data viz / analysis</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../libamrfile/">Python/R/MATLAB (libamrfile)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../visit/">VisIt</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">BISICLES user documents</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">BISICLES solver benchmark executable</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="bisicles-solver-benchmark-executable">BISICLES solver benchmark executable</h1>
+<p>Since the vast majority of the CPU time in a typical BISICLES run is
+spent in the velocity solver, it can be useful to run the solver as a
+standalone code to examine performance and convergence issues. The code
+in BISICLES/code/benchmark is designed to read in a BISICLES plotfile
+written out as a part of a standard BISICLES run and perform the
+momentum balance velocity solve based on the configuration in the
+plotfile. In order for this to work, the option</p>
+<pre><code>amr.write_solver_rhs = 1
+</code></pre>
+<p>must be set in the input file used by the driver run. Then, the option</p>
+<pre><code>main.filename =  hdf5 filename
+</code></pre>
+<p>must be set in the inputs file used to run the benchmark code, which
+tells the code where to look for the problem setup. To see how this all
+works (assuming that Chombo, etc are all set up already), try the
+following test:</p>
+<ol>
+<li>cd BISICLES/code/benchmark</li>
+<li>type  "make regression ". This causes the following to happen:<ol>
+<li>If necessary, the driver code in BISICLES/exec2D is compiled</li>
+<li>the driver executable is run with
+    BISICLES/benchmark/inputs.regression as the inputs file. In the
+    process, a plotfile named
+     "stream.regression.preSolve.000000.2d.hdf5 " is written out.
+     "preSolve " means that it 's written immediately before
+    conducting a velocity solve</li>
+<li>the solverBenchmark executable is then run using the same inputs
+    file</li>
+<li>the code reads in the inputs file and the hdf5 file and performs
+    what should be an identical velocity solve to the one which was
+    performed in the driver.</li>
+</ol>
+</li>
+</ol>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
