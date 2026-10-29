@@ -357,7 +357,7 @@ void IceUtility::computeC0(Vector<LevelData<FArrayBox>* >& a_vectC0,
     pp.query("thickness", thinIceDragThickness);
     thinIceDrag = thinIceDragExtra * thinIceDragThickness > TINY_NORM;
   }
-  
+
   for (int lev=0; lev <= a_finest_level; lev++)
     {
       const LevelSigmaCS& levelCS = *a_coordSys[lev];
@@ -1180,7 +1180,7 @@ void IceUtility::multiplyByGroundedFraction
 }
 
 
-/// set C = 0 in floating region
+/// set C = 0  (optionally > 0) in floating region
 /** 
     If nRef <= 0, C is set to zero according to the mask in a_levelCS
 
@@ -1200,19 +1200,24 @@ void IceUtility::setFloatingBasalFriction
   // apply to this function. 
   int subdivision = 0; // > 0 for sub-grid interpolation
   Real ice_free_beta = 1.0e+2;
+  Real min_beta = 0.0;
   {
     // for backward compatibility
     ParmParse pp("amr");
     pp.query("grounding_line_subdivision", subdivision);
     pp.query("ice_free_beta", ice_free_beta);
+    pp.query("min_beta", min_beta);
   }
 
   {
     ParmParse pp("basal_friction");
     pp.query("grounding_line_subdivision", subdivision);
     pp.query("ice_free_beta", ice_free_beta);
+    pp.query("min_beta", min_beta);
   }
- 
+
+  ice_free_beta = std::max(ice_free_beta, min_beta);
+  
   if (subdivision > 0)
     {
       pout() << " IceUtility::setFloatingBasalFriction : interpolation... " << std::endl;
@@ -1224,7 +1229,8 @@ void IceUtility::setFloatingBasalFriction
   for (DataIterator dit(a_grids); dit.ok(); ++dit)
     {
       bool anyFloating = a_coords.anyFloating()[dit]; 
-      // set friction on open land and open sea to 100. Set friction on floating ice to 0
+      // set friction on open land and open sea to ice_free_beta.
+      // set ice shelf friction to min_beta & ensure firiction > min_beta
       if(true)
 	{
 	  FArrayBox& thisC = a_C[dit];
@@ -1232,6 +1238,7 @@ void IceUtility::setFloatingBasalFriction
 	  FORT_SETFLOATINGBETA(CHF_FRA1(thisC,0),
 			       CHF_CONST_FIA1(mask,0),
 			       CHF_REAL(ice_free_beta),
+			       CHF_REAL(min_beta),
 			       CHF_BOX(a_grids[dit]));
 	  
 	  // friction must be non-negative
