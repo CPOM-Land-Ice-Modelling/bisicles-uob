@@ -418,8 +418,6 @@ InverseVerticallyIntegratedVelocitySolver::define
 int InverseVerticallyIntegratedVelocitySolver::solve
 (Vector<LevelData<FArrayBox>* >& a_horizontalVel,
  Vector<LevelData<FArrayBox>* >& a_calvedIce,
- Vector<LevelData<FArrayBox>* >& a_addedIce,
- Vector<LevelData<FArrayBox>* >& a_removedIce,
  Real& a_initialResidualNorm, Real& a_finalResidualNorm,
  const Real a_convergenceMetric,
  const Vector<LevelData<FArrayBox>* >& a_rhs,
@@ -440,8 +438,6 @@ int InverseVerticallyIntegratedVelocitySolver::solve
   m_C0 = a_C0;
   m_rhs = a_rhs;
   m_calvedIce = a_calvedIce;
-  m_addedIce = a_addedIce;
-  m_removedIce = a_removedIce;
   m_time = a_time;
 
   bool skipOptimization = ((m_time - m_prev_time) < m_config.m_minTimeBetweenOptimizations);
@@ -956,7 +952,7 @@ InverseVerticallyIntegratedVelocitySolver::solveStressEqn
   bool linear = a_adjoint;
 
   
-  jfnkSolver.solve(a_u, m_calvedIce, m_addedIce , m_removedIce ,
+  jfnkSolver.solve(a_u, m_calvedIce, 
 		   initialNorm, finalNorm, convergenceMetric, linear, 
 		   a_rhs, a_C, a_C0, a_A, a_muCoef, m_coordSys, 0.0 , 0, m_finest_level);
 
