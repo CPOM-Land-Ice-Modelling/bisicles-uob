@@ -84,7 +84,7 @@ jobs:
     - name: benn calving test
       continue-on-error: false
       run: | 
-          cd $GITHUB_WORKSPACE/code/regression/ASE-Benn/
+          cd $GITHUB_WORKSPACE/code/regression/ASE-benn/
           ${{ env.bike }} inputs.regression
           grep HDF5 pout.0
 
