@@ -469,16 +469,7 @@ AmrIce::~AmrIce()
 	  delete m_calvedIceThickness[lev];
 	  m_calvedIceThickness[lev] = NULL;
 	}
-      if (m_removedIceThickness[lev] != NULL)
-	{
-	  delete m_removedIceThickness[lev];
-	  m_removedIceThickness[lev] = NULL;
-	}
-      if (m_addedIceThickness[lev] != NULL)
-	{
-	  delete m_addedIceThickness[lev];
-	  m_addedIceThickness[lev] = NULL;
-	}
+
     
 
     }
@@ -1494,8 +1485,6 @@ AmrIce::initialize()
       m_calvedIceThickness.resize(m_max_level+1, NULL);
       m_fluxGL.resize(m_max_level+1, NULL);
       m_calvingVelocity.resize(m_max_level+1, NULL);
-      m_removedIceThickness.resize(m_max_level+1, NULL);
-      m_addedIceThickness.resize(m_max_level+1, NULL);
       m_divThicknessFlux.resize(m_max_level+1, NULL);
       m_internalEnergy.resize(m_max_level+1, NULL);
       m_tillWaterDepth.resize(m_max_level+1, NULL);
@@ -1827,28 +1816,8 @@ AmrIce::defineSolver()
  
 }
 
-//inline 
-//Real remainder(Real a, Real b)
-//{
-//  Real p = a/b; int i(p);
-//  return std::min( p - i, p - 1 - i);
-//}
-void setVal(LevelData<FArrayBox>& a_data, Real a_val)
-{
-  for (DataIterator dit(a_data.dataIterator()); dit.ok(); ++dit)
-	{
-	  a_data[dit].setVal(a_val);
-	}
-}
 
 
-void setToZero(Vector<LevelData<FArrayBox>*>& a_data)
-{
-  for (int lev=0; lev < a_data.size(); lev++)
-    {
-      if (a_data[lev]) setVal(*a_data[lev], 0.0);
-    }
-}
 
 void
 AmrIce::run2(Real a_max_time, int a_max_step)
@@ -2367,8 +2336,7 @@ AmrIce::run(Real a_max_time, int a_max_step)
 	    }	  
 #endif	  
 	  setToZero(m_calvedIceThickness); 
-	  setToZero(m_removedIceThickness);
-	  setToZero(m_addedIceThickness);
+
 
 	  if ((m_cur_step != 0) && (m_cur_step%m_regrid_interval ==0))
 	    {
@@ -3292,8 +3260,6 @@ AmrIce::levelSetup(int a_level, const DisjointBoxLayout& a_grids)
   levelAllocate(&m_calvedIceThickness[a_level],a_grids, 1, IntVect::Unit);setVal(*m_calvedIceThickness[a_level],0.0);
   levelAllocate(&m_fluxGL[a_level],a_grids, 1, IntVect::Unit); setVal(*m_fluxGL[a_level],0.0);
   levelAllocate(&m_calvingVelocity[a_level],a_grids, SpaceDim, IntVect::Unit); setVal(*m_calvingVelocity[a_level],0.0);
-  levelAllocate(&m_removedIceThickness[a_level],a_grids, 1, IntVect::Unit);
-  levelAllocate(&m_addedIceThickness[a_level],a_grids, 1, IntVect::Unit);
   levelAllocate(&m_deltaTopography[a_level],a_grids, 1, IntVect::Zero);
   // probably eventually want to do this differently
   RealVect dx = m_amrDx[a_level]*RealVect::Unit;
@@ -3601,7 +3567,7 @@ AmrIce::solveVelocityField(bool a_forceSolve, Real a_convergenceMetric)
 		  CH_assert(jfnkSolver != NULL);
 		  const bool linear = true;
 		  rc = jfnkSolver->solve( m_velocity, 
-					  m_calvedIceThickness, m_addedIceThickness, m_removedIceThickness,
+					  m_calvedIceThickness, 
 					  initialNorm,finalNorm,convergenceMetric, 
 					  linear, m_velRHS, m_velBasalC, vectC0, m_A, m_cellMuCoef,
 					  m_vect_coordSys, m_time, 0, m_finest_level);
@@ -3622,7 +3588,7 @@ AmrIce::solveVelocityField(bool a_forceSolve, Real a_convergenceMetric)
 		  m_velSolver->setMaxIterations(tol);
 
 		  rc = m_velSolver->solve(m_velocity, 
-					  m_calvedIceThickness, m_addedIceThickness, m_removedIceThickness,
+					  m_calvedIceThickness, 
 					  initialNorm,finalNorm,convergenceMetric,
 					  m_velRHS, m_velBasalC, vectC0, m_A, m_cellMuCoef,
 					  m_vect_coordSys, m_time, 0, m_finest_level);
@@ -3739,8 +3705,6 @@ AmrIce::solveVelocityField(bool a_forceSolve, Real a_convergenceMetric)
 	  notifyObservers(Observer::PreCalving);
 	  solverRetVal = m_velSolver->solve(m_velocity, 
 					    m_calvedIceThickness, 
-					    m_addedIceThickness,
-					    m_removedIceThickness,
 					    m_velocitySolveInitialResidualNorm, 
 					    m_velocitySolveFinalResidualNorm,
 					    a_convergenceMetric,
@@ -5467,15 +5431,112 @@ void AmrIce::applyCalvingCriterion(CalvingModel::Stage a_stage)
 
   
   //allow calving model to modify geometry 
-  for (int lev=0; lev<= m_finest_level; lev++)
+  Real min_thickness(0.0);
+  ParmParse pp("CalvingModel");
+  pp.query("min_thickness",min_thickness);
+  CH_assert(!(min_thickness < 0.0));
+  Real min_frac(0.0);
+  if (min_thickness > 1.0e-10) min_frac = TINY_FRAC;
+ 
+  for (int lev=0; lev <= m_finest_level; lev++)
     {
       LevelData<FArrayBox>& thck = m_vect_coordSys[lev]->getH();
       LevelData<FArrayBox>& frac = *m_iceFrac[lev];
+      const LevelData<BaseFab<int> >& mask = m_vect_coordSys[lev]->getFloatingMask();
       LevelData<FArrayBox>& calvedIce = *m_calvedIceThickness[lev];
-      LevelData<FArrayBox>& addedIce = *m_addedIceThickness[lev];
-      LevelData<FArrayBox>& removedIce = *m_removedIceThickness[lev];
-      m_calvingModelPtr->applyCriterion(thck, calvedIce, addedIce, removedIce, frac, *this, lev, a_stage);	  
- 
+      LevelData<BaseFab<bool> > critical(m_amrGrids[lev], 1, thck.ghostVect());
+      for (DataIterator dit(m_amrGrids[lev]); dit.ok(); ++dit)
+	{
+	  critical[dit].setVal(false);
+	}
+      m_calvingModelPtr->evaluateCriterion(critical, *this, lev, a_stage);
+      for (DataIterator dit(m_amrGrids[lev]); dit.ok(); ++dit)
+	{
+	  Box b = m_amrGrids[lev][dit];
+	  for (BoxIterator bit(b); bit.ok(); ++bit)
+	    {
+	      const IntVect& iv = bit();
+	      if (critical[dit](iv))
+		{
+		  // Calving: record change in thck
+		  Real prevThck = thck[dit](iv);
+		  thck[dit](iv) = std::min(thck[dit](iv),min_thickness);
+		  frac[dit](iv) = std::min(frac[dit](iv),min_frac);
+		  calvedIce[dit](iv) += (prevThck - thck[dit](iv));
+		}
+	      if ((mask[dit](iv) == GROUNDEDMASKVAL) || mask[dit](iv) == FLOATINGMASKVAL)
+		{
+		  // restore min_thickness/min_frac where requested. bodge
+		  thck[dit](iv) = std::max(thck[dit](iv), min_thickness);
+		  frac[dit](iv) = std::max(frac[dit](iv), min_frac);
+		}
+	    }
+	}	      
+    }
+
+  // Boundaries:
+  //used to get delegated to DomainEdgeCalvingModel,
+  //but then almost every model had to rely on that...
+  Vector<int> frontLo(2,false); 
+  pp.queryarr("front_lo",frontLo,0,frontLo.size());
+  Vector<int> frontHi(2,false);
+  pp.queryarr("front_hi",frontHi,0,frontHi.size());
+  bool preserveSea = false;
+  pp.query("preserveSea",preserveSea);
+  bool preserveLand = false;
+  pp.query("preserveLand",preserveLand);
+  for (int lev=0; lev <= m_finest_level; lev++)
+    {
+      const LevelSigmaCS& levelCoords = *geometry(lev);
+      const DisjointBoxLayout& grids = levelCoords.grids();
+      const ProblemDomain domain = grids.physDomain();
+      LevelData<FArrayBox>& thck = m_vect_coordSys[lev]->getH();
+      LevelData<FArrayBox>& frac = *m_iceFrac[lev];
+      const IntVect ghost = thck.ghostVect();
+      for (DataIterator dit(m_amrGrids[lev]); dit.ok(); ++dit)
+	{
+	  for (int dir=0; dir<SpaceDim; dir++)
+	    {
+	      if (!domain.isPeriodic(dir))
+		{
+		  if (frontLo[dir] > 0)
+		    {
+		      Box loBox = adjCellLo(domain,dir,ghost[dir]);
+		      // (DFM 5-25-15) grow in transverse direction
+		      // to ensure that we don't wind up with corner
+		      // cells with ice in them
+		      IntVect transverseVect = ghost;
+		      transverseVect[dir] = 0;
+		      loBox.grow(transverseVect);
+		      loBox &= thck[dit].box();
+		      for (BoxIterator bit(loBox); bit.ok(); ++bit)
+			{
+			   const IntVect& iv = bit();
+			   thck[dit](iv) = 0.0;
+			   //frac[dit](iv) = 0.0;
+			}
+		    } // end  if (front_lo[dir] > 0)
+		  if (frontHi[dir] > 0)
+		    {
+		      Box hiBox = adjCellHi(domain,dir,ghost[dir]);
+		      // (DFM 5-25-15) grow in transverse direction
+		      // to ensure that we don't wind up with corner
+		      // cells with ice in them
+		      IntVect transverseVect = ghost;
+		      transverseVect[dir] = 0;
+		      hiBox.grow(transverseVect);
+		      hiBox &= thck[dit].box();
+		      for (BoxIterator bit(hiBox); bit.ok(); ++bit)
+			{
+			  const IntVect& iv = bit();
+			  thck[dit](iv) = 0.0;
+			  //frac[dit](iv) = 0.0;
+			}
+		    } //end if (m_frontHi[dir] > 0)
+		  
+		} // end if (!domain.isPeriodic(dir))
+	    } // end for (int dir=0; dir<SpaceDim; dir++)
+	}
     }
   
   Real calved_volume = computeSum(m_calvedIceThickness,  m_refinement_ratios,
@@ -5498,7 +5559,7 @@ void AmrIce::applyCalvingCriterion(CalvingModel::Stage a_stage)
   // usually a good time to eliminate remote ice
   if (m_eliminate_remote_ice) eliminateRemoteIce(a_stage);
 
-
+  
 
   
 }
@@ -5517,8 +5578,7 @@ void AmrIce::eliminateRemoteIce(CalvingModel::Stage a_stage)
 			       m_amrDx[0], Interval(0,0), 0);
 
   IceUtility::eliminateRemoteIce(m_vect_coordSys, m_velocity, 
-				 m_calvedIceThickness, m_addedIceThickness,
-				 m_removedIceThickness,
+				 m_calvedIceThickness,
 				 m_amrGrids, m_amrDomains, 
 				 m_refinement_ratios, m_amrDx[0], 
 				 m_finest_level, m_eliminate_remote_ice_max_iter,
@@ -5642,7 +5702,8 @@ AmrIce::implicitThicknessCorrection(Real a_dt,
 	  
 	  for (DataIterator dit(levelGrids); dit.ok(); ++dit)
 	    {
-	      CH_assert( (*H[lev])[dit].norm(0,0,1) < HUGE_THICKNESS);
+	      Real maxH_post_diffusion =  (*H[lev])[dit].norm(0,0,1);
+	      CH_assert( maxH_post_diffusion< HUGE_THICKNESS);
 	      levelCoord_H[dit].copy( (*H[lev])[dit], 0, 0, 1);
 
 	      //put sensible values into the corners.

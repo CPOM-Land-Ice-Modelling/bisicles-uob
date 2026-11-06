@@ -423,7 +423,24 @@ private:
 
   // filename for CF checkpoint implied by m_check_prefix
   string filenameCFCheckpoint();
+
+  // these have wider value...
+  void setVal(LevelData<FArrayBox>& a_data, Real a_val)
+  {
+    for (DataIterator dit(a_data.dataIterator()); dit.ok(); ++dit)
+      {
+	a_data[dit].setVal(a_val);
+      }
+  }
   
+  
+  void setToZero(Vector<LevelData<FArrayBox>*>& a_data)
+  {
+    for (int lev=0; lev < a_data.size(); lev++)
+      {
+	if (a_data[lev]) setVal(*a_data[lev], 0.0);
+      }
+  }
 public:
   
 #endif
@@ -624,8 +641,7 @@ public:
 
   /// access function for calved ice data
   const  Vector<LevelData<FArrayBox>* >& calvedIceThickness() const {return m_calvedIceThickness; }
-  const  Vector<LevelData<FArrayBox>* >& removedIceThickness() const {return m_removedIceThickness; }
-  const  Vector<LevelData<FArrayBox>* >& addedIceThickness() const {return m_addedIceThickness; }
+ 
   
   /// access function for surface temperature
   const  Vector<LevelData<FArrayBox>* >& surfaceInternalEnergy() const {return m_sInternalEnergy; }
@@ -1281,8 +1297,6 @@ protected:
   //thickness of calved ice
   mutable Vector<LevelData<FArrayBox>* > m_calvedIceArea;
   Vector<LevelData<FArrayBox>* > m_calvedIceThickness;
-  Vector<LevelData<FArrayBox>* > m_removedIceThickness;
-  Vector<LevelData<FArrayBox>* > m_addedIceThickness;
   Vector<LevelData<FArrayBox>* > m_calvingVelocity; 
   Vector<LevelData<FArrayBox>* > m_fluxGL;
 
@@ -1600,8 +1614,8 @@ private:
       m_observers[i]->notify(a_n, *this);
   }
 
-};  
-  
+};
+
 #include "NamespaceFooter.H"
 
 #endif

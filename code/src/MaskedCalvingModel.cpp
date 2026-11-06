@@ -49,11 +49,7 @@ MaskedCalvingModel::define(SurfaceFlux* a_calvingMaskPtr,
 
 //alter the thickness field at the end of a time step  
 void 
-MaskedCalvingModel::applyCriterion(LevelData<FArrayBox>& a_thickness, 
-                                   LevelData<FArrayBox>& a_calvedIce,
-                                   LevelData<FArrayBox>& a_addedIce,
-                                   LevelData<FArrayBox>& a_removedIce,
-                                   LevelData<FArrayBox>& a_iceFrac, 
+MaskedCalvingModel::evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
                                    const AmrIce& a_amrIce,
                                    int a_level,
                                    Stage a_stage)
@@ -72,34 +68,24 @@ MaskedCalvingModel::applyCriterion(LevelData<FArrayBox>& a_thickness,
   for (DataIterator dit(grids); dit.ok(); ++dit)
     {
       const BaseFab<int>& mask = levelCoords.getFloatingMask()[dit];
-      FArrayBox& thck = a_thickness[dit];
-      FArrayBox& calved = a_calvedIce[dit];
-      FArrayBox& added = a_addedIce[dit];
-      FArrayBox& removed = a_removedIce[dit];
-      FArrayBox& thisCalvingMask = calvingMask[dit];
+      const FArrayBox& thisCalvingMask = calvingMask[dit];
+      BaseFab<bool>& crit = a_critical[dit];
       Box b = grids[dit];
 
       for (BoxIterator bit(b); bit.ok(); ++bit)
 	{
 	  const IntVect& iv = bit();
-	  Real prevThck = thck(iv);
 	  if (mask(iv) == OPENSEAMASKVAL)
 	    {
-	      thck(iv) = 0.0;
+	      crit(iv) = true;
 	    }
 	  else if (mask(iv) == OPENLANDMASKVAL)
 	    {
-	      thck(iv) = 0.0;
+	      crit(iv) = true;
 	    }
 	  else if ((mask(iv) == FLOATINGMASKVAL) && (thisCalvingMask(iv,0) >= m_calvingVal))
 	    {
-	      thck(iv) = m_minThickness;
-	    }
-	      
-	  // Record gain/loss of ice
-	  if (calved.box().contains(iv))
-	    {
-	      updateCalvedIce(thck(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
+	      crit(iv) = true;
 	    }
 	}
     }
