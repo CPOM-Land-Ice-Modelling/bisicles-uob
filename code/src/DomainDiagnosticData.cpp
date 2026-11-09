@@ -13,9 +13,9 @@
 #include "IceConstants.H"
 #include "computeSum.H"
 #include <functional>
+#include "ReadLevelData.H"
+#include "FillFromReference.H"
 #include "NamespaceHeader.H"
-
-
 
 void  MaskedIntegration::integrateScalarInside
 (Real& a_integral, 
@@ -276,6 +276,15 @@ DomainDiagnosticData::initDiagnostics
   pp.query("report_ice_area", m_report_area);
   pp.query("report_total_flux", m_report_total_flux);
   pp.query("report_calving", m_report_calving);
+  
+  m_mask_domain_diagnostic_data = false;
+  m_domain_diagnostic_data_mask_file = "";
+  m_num_domain_diagnostic_data_masks = 0;
+  pp.query("mask_domain_diagnostic_data", m_mask_domain_diagnostic_data);
+  pp.query("domain_diagnostic_data_mask_file", m_domain_diagnostic_data_mask_file);
+  pp.query("num_domain_diagnostic_data_masks", m_num_domain_diagnostic_data_masks);
+  pp.queryarr("domain_diagnostic_data_mask_names", m_domain_diagnostic_data_mask_names, 0, m_num_domain_diagnostic_data_masks);
+    
   record(a_amrIce);
 }
 
@@ -291,8 +300,7 @@ void DomainDiagnosticData::record(AmrIce& a_amrIce)
       dt = a_amrIce.time() - m_time[iprev]; 
     }
   Real rhoi = a_amrIce.m_iceDensity;
-
-
+  
   const Vector<RefCountedPtr<LevelSigmaCS> >& coords = a_amrIce.amrGeometry();
   const Vector<int>& ratio = a_amrIce.refRatios();
   const Vector<Real>& dx = a_amrIce.amrDx();
@@ -303,13 +311,21 @@ void DomainDiagnosticData::record(AmrIce& a_amrIce)
       hab[lev] = (const_cast<LevelData<FArrayBox>* >(&(coords[lev]->getThicknessOverFlotation())));
       thk[lev] = (const_cast<LevelData<FArrayBox>* >(&(coords[lev]->getH())));
       topg[lev] = (const_cast<LevelData<FArrayBox>* >(&(coords[lev]->getTopography())));
-    }
+      if (m_mask_domain_diagnostic_data)
+        {
+	  sectorMaskFraction[lev] = new LevelData<FArrayBox>(a_amrIce.grids(lev), 1, IntVect::Zero);
+	}
+  }
+	
+		
   Vector<LevelData<FArrayBox>* >& smb = a_amrIce.m_surfaceThicknessSource;
   Vector<LevelData<FArrayBox>* >& bmb = a_amrIce.m_basalThicknessSource;
   Vector<LevelData<FArrayBox>* >& cfluxdt = a_amrIce.m_calvedIceThickness;
   Vector<LevelData<FArrayBox>* >& glflux = a_amrIce.m_fluxGL;
   Vector<LevelData<FArrayBox>* >& frac = a_amrIce.m_iceFrac;
+ 
   
+  //int maskNo = (m_mask_domain_diagnostic_data) ? 1 : 0; int maskComp = 0; // might support this later
   int maskNo = 0; int maskComp = 0; // might support this later
   Real h_min = TINY_THICKNESS;
 
@@ -321,8 +337,8 @@ void DomainDiagnosticData::record(AmrIce& a_amrIce)
 
   // capture repetitive args
   auto sumScalar = [coords, topg, thk, hab, frac,
-		    sectorMaskFraction, dx, ratio, n, maskNo, maskComp]
-    (const Vector<LevelData<FArrayBox>* >& scalar, function<bool(Real h, Real f, int mask)> inside)
+		    sectorMaskFraction, dx, ratio, n]
+    (const Vector<LevelData<FArrayBox>* >& scalar, function<bool(Real h, Real f, int mask)> inside , int maskNo, int maskComp)
 		   {
 		     Real s;
 		     MaskedIntegration::integrateScalarInside
@@ -332,16 +348,16 @@ void DomainDiagnosticData::record(AmrIce& a_amrIce)
 		   };
 
   m_time.push_back(a_amrIce.time());
-  m_ice_volume.push_back(rhoi*sumScalar(thk, entire));
-  m_ice_vaf.push_back(rhoi*sumScalar(hab, ice));
-  m_ice_grounded_area.push_back(sumScalar(frac, grounded));
-  m_ice_floating_area.push_back(sumScalar(frac, floating));
-  m_ice_total_smb.push_back(rhoi*sumScalar(smb, entire));
-  m_ice_total_bmb.push_back(rhoi*sumScalar(bmb, entire));
-  m_ice_floating_total_bmb.push_back(rhoi*sumScalar(bmb, floating));
-  m_ice_grounded_total_bmb.push_back(rhoi*sumScalar(bmb, grounded));
-  m_ice_total_calving_flux.push_back(-rhoi/a_amrIce.dt()*sumScalar(cfluxdt, entire));
-  m_ice_total_gl_flux.push_back(rhoi*sumScalar(glflux, entire)); 
+  m_ice_volume.push_back(rhoi*sumScalar(thk, entire, 0, 0));
+  m_ice_vaf.push_back(rhoi*sumScalar(hab, ice, 0, 0));
+  m_ice_grounded_area.push_back(sumScalar(frac, grounded, 0, 0));
+  m_ice_floating_area.push_back(sumScalar(frac, floating, 0, 0));
+  m_ice_total_smb.push_back(rhoi*sumScalar(smb, entire, 0, 0));
+  m_ice_total_bmb.push_back(rhoi*sumScalar(bmb, entire, 0, 0));
+  m_ice_floating_total_bmb.push_back(rhoi*sumScalar(bmb, floating, 0, 0));
+  m_ice_grounded_total_bmb.push_back(rhoi*sumScalar(bmb, grounded, 0, 0));
+  m_ice_total_calving_flux.push_back(-rhoi/a_amrIce.dt()*sumScalar(cfluxdt, entire, 0, 0));
+  m_ice_total_gl_flux.push_back(rhoi*sumScalar(glflux, entire, 0, 0)); 
 
   int nt = m_time.size() - 1;
   Real err_mass_con = 0.0;
@@ -349,27 +365,56 @@ void DomainDiagnosticData::record(AmrIce& a_amrIce)
     Real dvdt = (m_ice_volume[nt] - m_ice_volume[nt-1])/(m_time[nt] - m_time[nt-1]);
     err_mass_con = dvdt
       - (m_ice_total_smb[nt] + m_ice_total_bmb[nt] + m_ice_total_calving_flux[nt]);
-
-    
-    
-
   }
   m_error_ice_mass_con.push_back(err_mass_con);
 
   // write  log
   for (int i = 0; i < m_cf_stuff.size(); i++)
-    {
-      if ( (m_cf_stuff[i].data) && (m_cf_stuff[i].data->size() > nt))
+	{
+	  if ( (m_cf_stuff[i].data) && (m_cf_stuff[i].data->size() > nt))
 	{
 	  pout() << "DomainDiagnosticData: "
-	    "time = " << std::fixed << std::setprecision(3) << m_time[nt] << " "
+		"time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | "
+		 << "Full domain: " 
 		 << m_cf_stuff[i].short_name << " = "
 		 << std::setprecision(12)  << std::scientific
 		 << (*m_cf_stuff[i].data)[nt] << " "
 		 << std::defaultfloat
 		 << m_cf_stuff[i].units << std::endl; 
 	}      
-    }
+	}
+	
+  // If we want this output calculated for seperate subdomains defined by a mask
+  if (m_mask_domain_diagnostic_data)
+    {
+      for (int ii=0; ii<m_num_domain_diagnostic_data_masks; ii++) 
+	{
+	  m_domain_diagnostic_data_mask = RefCountedPtr<LevelData<FArrayBox> >(new LevelData<FArrayBox>);
+	  Vector<RefCountedPtr<LevelData<FArrayBox> > > vectData(1, m_domain_diagnostic_data_mask);
+	  Vector<string> name(1,m_domain_diagnostic_data_mask_names[ii]);
+	  readLevelData(vectData,m_domain_diagnostic_data_mask_dx,m_domain_diagnostic_data_mask_file,name,1);
+	  pout() << "DomainDiagnosticData::updateGeometry: Successfully read DomainDiagnosticData mask "<< m_domain_diagnostic_data_mask_names[ii] << " from file " << m_domain_diagnostic_data_mask_file << ". dx = " << m_domain_diagnostic_data_mask_dx << std::endl;
+	  
+	  for (int lev = 0; lev < n; lev++)
+	    {
+	      const RealVect& domainDiagnosticDataDx = RealVect::Unit*m_domain_diagnostic_data_mask_dx;
+	      FillFromReference(*sectorMaskFraction[lev], *m_domain_diagnostic_data_mask, a_amrIce.dx(lev), domainDiagnosticDataDx, true);
+	  }
+		
+	  pout() << "DomainDiagnosticData: time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | " << m_domain_diagnostic_data_mask_names[ii] << ": time = " << std::setprecision(12) << std::scientific << a_amrIce.time() << " " << std::defaultfloat << "yr" << std::endl; 
+	  pout() << "DomainDiagnosticData: time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | " << m_domain_diagnostic_data_mask_names[ii] << ": lim = " << std::setprecision(12) << std::scientific << rhoi*sumScalar(thk, entire, 1, 0) << " " << std::defaultfloat << "kg" << std::endl; 
+	  pout() << "DomainDiagnosticData: time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | " << m_domain_diagnostic_data_mask_names[ii] << ": limnsw = " << std::setprecision(12) << std::scientific << rhoi*sumScalar(hab, ice, 1, 0) << " " << std::defaultfloat << "kg" << std::endl; 
+	  pout() << "DomainDiagnosticData: time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | " << m_domain_diagnostic_data_mask_names[ii] << ": iareagr = " << std::setprecision(12) << std::scientific << sumScalar(frac, grounded, 1, 0) << " " << std::defaultfloat << "m^2" << std::endl; 
+	  pout() << "DomainDiagnosticData: time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | " << m_domain_diagnostic_data_mask_names[ii] << ": iareafl = " << std::setprecision(12) << std::scientific << sumScalar(frac, floating, 1, 0) << " " << std::defaultfloat << "m^2" << std::endl; 
+	  pout() << "DomainDiagnosticData: time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | " << m_domain_diagnostic_data_mask_names[ii] << ": tendacabf = " << std::setprecision(12) << std::scientific << rhoi*sumScalar(smb, entire, 1, 0) << " " << std::defaultfloat << "kg yr^-1" << std::endl; 
+	  pout() << "DomainDiagnosticData: time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | " << m_domain_diagnostic_data_mask_names[ii] << ": tendlibmassbf = " << std::setprecision(12) << std::scientific << rhoi*sumScalar(bmb, entire, 1, 0) << " " << std::defaultfloat << "kg yr^-1" << std::endl; 
+	  pout() << "DomainDiagnosticData: time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | " << m_domain_diagnostic_data_mask_names[ii] << ": tendlibmassbfgr = " << std::setprecision(12) << std::scientific << rhoi*sumScalar(bmb, floating, 1, 0) << " " << std::defaultfloat << "kg yr^-1" << std::endl; 
+	  pout() << "DomainDiagnosticData: time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | " << m_domain_diagnostic_data_mask_names[ii] << ": tendlibmassbffl = " << std::setprecision(12) << std::scientific << rhoi*sumScalar(bmb, grounded, 1, 0) << " " << std::defaultfloat << "kg yr^-1" << std::endl; 
+	  pout() << "DomainDiagnosticData: time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | " << m_domain_diagnostic_data_mask_names[ii] << ": tendlicalvf = " << std::setprecision(12) << std::scientific << -rhoi/a_amrIce.dt()*sumScalar(cfluxdt, entire, 1, 0) << " " << std::defaultfloat << "kg yr^-1" << std::endl; 
+	  pout() << "DomainDiagnosticData: time = " << std::fixed << std::setprecision(3) << m_time[nt] << " | " << m_domain_diagnostic_data_mask_names[ii] << ": tendligroundf = " << std::setprecision(12) << std::scientific << rhoi*sumScalar(glflux, entire, 1, 0) << " " << std::defaultfloat << "kg yr^-1" << std::endl; 
+	  	  
+	}
+  }
 
   Real max_err_mass_con(-1.0);
   ParmParse pp("DomainDiagnosticData");
@@ -377,6 +422,14 @@ void DomainDiagnosticData::record(AmrIce& a_amrIce)
   if (max_err_mass_con > 0.0)
     {
       CH_assert(Abs(err_mass_con) < max_err_mass_con);
+    }
+	
+  for (int lev = 0; lev < sectorMaskFraction.size(); lev++)
+    {
+      if (sectorMaskFraction[lev] != NULL)
+	{
+	  delete sectorMaskFraction[lev];sectorMaskFraction[lev]= NULL;
+	}  
     }
   
 }
