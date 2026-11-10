@@ -276,14 +276,6 @@ DomainDiagnosticData::initDiagnostics
   pp.query("report_ice_area", m_report_area);
   pp.query("report_total_flux", m_report_total_flux);
   pp.query("report_calving", m_report_calving);
-  
-  m_mask_domain_diagnostic_data = false;
-  m_domain_diagnostic_data_mask_file = "";
-  m_num_domain_diagnostic_data_masks = 0;
-  pp.query("mask_domain_diagnostic_data", m_mask_domain_diagnostic_data);
-  pp.query("domain_diagnostic_data_mask_file", m_domain_diagnostic_data_mask_file);
-  pp.query("num_domain_diagnostic_data_masks", m_num_domain_diagnostic_data_masks);
-  pp.queryarr("domain_diagnostic_data_mask_names", m_domain_diagnostic_data_mask_names, 0, m_num_domain_diagnostic_data_masks);
     
   record(a_amrIce);
 }
