@@ -291,6 +291,15 @@ DomainDiagnosticData::initDiagnostics
 
 void DomainDiagnosticData::record(AmrIce& a_amrIce)
 {
+	
+  ParmParse pp_amr("amr");
+  m_mask_domain_diagnostic_data = false;
+  m_domain_diagnostic_data_mask_file = "";
+  m_num_domain_diagnostic_data_masks = 0;
+  pp_amr.query("mask_domain_diagnostic_data", m_mask_domain_diagnostic_data);
+  pp_amr.query("domain_diagnostic_data_mask_file", m_domain_diagnostic_data_mask_file);
+  pp_amr.query("num_domain_diagnostic_data_masks", m_num_domain_diagnostic_data_masks);
+  pp_amr.queryarr("domain_diagnostic_data_mask_names", m_domain_diagnostic_data_mask_names, 0, m_num_domain_diagnostic_data_masks);
 
   Real dt = 1.2345678e+300;
   size_t ithis = m_time.size();
