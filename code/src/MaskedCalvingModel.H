@@ -40,11 +40,7 @@ void define(SurfaceFlux* a_calvingMaskPtr,
 
 
    //alter the thickness field at the end of a time step  
-   virtual void applyCriterion(LevelData<FArrayBox>& a_thickness, 
-                               LevelData<FArrayBox>& a_calvedIce,
-                               LevelData<FArrayBox>& a_addedIce,
-                               LevelData<FArrayBox>& a_removedIce,
-			       LevelData<FArrayBox>& a_iceFrac, 
+   virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical,
 			       const AmrIce& a_amrIce,
 			       int a_level,
 			       Stage a_stage);

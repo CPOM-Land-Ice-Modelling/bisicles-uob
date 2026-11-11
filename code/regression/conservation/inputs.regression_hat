@@ -1,0 +1,121 @@
+#main.poutBaseName=pout.cyl
+
+#domain details
+main.domain_size = 1280000.0 1280000.0 1.0e+3
+amr.num_cells = 128 128 10 
+amr.is_periodic = 0 0 0
+
+#bulk constitutive relation and parameters
+main.constitutiveRelation = L1L2
+L1L2.delta = 1.0e-1
+main.rateFactor = patersonRate
+patersonRate.epsSqr0 = 1.0e-12
+
+#geometry,temperarture & basal friction input data
+geometry.problem_type = Python
+PythonIBC.module = cylinder
+PythonIBC.thicknessFunction = thickness
+PythonIBC.topographyFunction = topography	
+PythonIBC.bc_lo = 0 0 # bc type at x = 0, y = 0
+PythonIBC.bc_hi = 0 0 # bc type at x = L , y = W
+
+temperature.type = constant
+temperature.value = 268
+
+amr.sigma = 0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+
+#basal friction relation parameters
+main.basalFrictionRelation = powerLaw
+geometry.beta_type = Python
+PythonBasalFriction.module = cylinder
+PythonBasalFriction.function = constfriction
+BasalFrictionPowerLaw.m = 0.333
+BasalFrictionPowerLaw.includeEffectivePressure = false
+
+#physical constants
+constants.ice_density=918.0
+constants.sea_water_density=1028.0
+
+surfaceFlux.type = pythonFlux
+surfaceFlux.module = cylinder
+surfaceFlux.function = acab
+amr.mask_sources = true
+basalFlux.type = zeroFlux
+
+amr.evolve_ice_frac_2 = true
+CalvingModel.type = RateAuBuhatCalvingModel
+CalvingModel.independent.type = pythonFlux
+CalvingModel.independent.function = fsrs_ind # free, steady, retreat, steady
+CalvingModel.independent.module = cylinder
+CalvingModel.front_lo = 1 1
+CalvingModel.front_hi = 1 1
+#CalvingModel.type = NoCalvingModel
+
+#velocity solve type -- 0 = Picard, 1 = JFNK, 5 = python
+amr.velocity_solver_type = 5
+#prescribe the velocity for a test
+###applies when amr.velocity_solver_type = 5
+PythonVelocitySolver.module = cylinder
+PythonVelocitySolver.function = velocity
+
+#time stepping
+main.maxTime = 20.0  # maximum time to run to
+main.maxStep = 20   # maximum number of steps to runx
+amr.temporal_accuracy = 1
+amr.cfl = 0.25
+amr.initial_cfl = 0.25
+amr.fixed_dt = 2.0
+
+#plotting options
+amr.plot_interval = 2
+amr.plot_prefix = plot.cyl_hat.
+amr.check_prefix = chk.cyl_hat.
+
+
+amr.plot_style_cf = true
+CFIO.lithk = true
+CFIO.lithk.time_integration = 1
+CFIO.licalvf = true
+
+amr.write_mask = true
+amr.write_thickness_sources = true
+
+#check points
+amr.check_interval = -777 # no need to write checkpoinst
+amr.check_overwrite = 0
+amr.verbosity = 5
+
+#AMR mesh options
+amr.maxLevel = 10 # finest level allowed in simulation
+amr.ref_ratio = 2 2 2 2 2 2 2 2 2 2 2
+amr.regrid_interval = 2  # number of timesteps between regridding
+amr.blockFactor = 8      # block factor used in grid generation
+amr.fill_ratio = 0.85    # how efficient are the grids
+amr.nestingRadius = 1    # proper nesting radius required
+amr.tags_grow = 4        # amount to buffer tags
+amr.tagCap = 0
+
+amr.interpolate_zb = 0 #go back to the IBC to regrid geometry
+amr.max_box_size = 48 # largest box length allowed
+
+#AMR tagging
+amr.tag_on_grad_velocity = 0
+amr.tag_on_grounded_laplacian_velocity = 0
+amr.lap_vel_tagging_val = 8.0
+amr.tag_grounding_line = 1
+amr.grounding_line_tagging_min_vel = 0
+amr.tag_ice_margin = 1
+
+#misc options
+amr.verbosity = 5
+amr.velocity_solve_interval = 1
+
+amr.eliminate_remote_ice = false
+
+#test conditions
+DomainDiagnosticData.max_err_mass_con = 1000.0 # kg/yr
+
+regression.result_hdf5 = plot.cyl_hat.000008.CF.2d.hdf5
+regression.reference_hdf5 = plot.cyl.000008.CF.2d.H5
+regression.tol = 1.0e-5
+#regression.diff_hdf5 = plot.cf_regression.diff.CF.2d.hdf5

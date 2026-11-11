@@ -45,11 +45,7 @@ public:
 			      
 
   // CalvingModel implementation
-  virtual void applyCriterion(LevelData<FArrayBox>& a_thickness,
-			      LevelData<FArrayBox>& a_calvedIce,
-			      LevelData<FArrayBox>& a_addedIce,
-			      LevelData<FArrayBox>& a_removedIce,  
-			      LevelData<FArrayBox>& a_iceFrac, 
+  virtual void evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
 			      const AmrIce& a_amrIce,
 			      int a_level,
 			      Stage a_stage);
@@ -63,7 +59,6 @@ public:
     m_factor = a.m_factor->new_surfaceFlux();
     m_includeBasalCrevasses = a.m_includeBasalCrevasses;
     m_calvingZoneLength = a.m_calvingZoneLength;
-    m_domainEdgeCalvingModel = new DomainEdgeCalvingModel(*a.m_domainEdgeCalvingModel);
     m_stressMeasure = a.m_stressMeasure;
     m_criticalStress = a.m_criticalStress;
   }
@@ -78,7 +73,6 @@ protected:
   SurfaceFlux* m_factor;
   bool m_includeBasalCrevasses;
   Real m_calvingZoneLength;
-  DomainEdgeCalvingModel* m_domainEdgeCalvingModel;
   StressMeasure m_stressMeasure; 
   Real m_criticalStress;
 
