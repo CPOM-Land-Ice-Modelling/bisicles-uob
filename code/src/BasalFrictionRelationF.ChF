@@ -67,10 +67,13 @@ c-----------------------------------
       end
       
 c------------------------------------
-c alpha <- min(alpha, a*p*|u|**(-1))
+c alpha <- min(alpha, a*p*|u|**(-1),), where h,|u| > eps
 c-----------------------------------
       subroutine BFRICTIONPLIMITTSAI(CHF_FRA1[alpha],
-     &     CHF_CONST_FRA[u],CHF_CONST_FRA1[p],CHF_CONST_FRA1[a],
+     &     CHF_CONST_FRA[u],
+     &     CHF_CONST_FRA1[p],
+     &     CHF_CONST_FRA1[h],
+     &     CHF_CONST_FRA1[a],
      &     CHF_BOX[box])
 
       integer CHF_AUTODECL[i]
@@ -80,12 +83,15 @@ c-----------------------------------
 
       CHF_AUTOMULTIDO[box;i]
       CHF_DTERM[
-      usq = usq0 + u(CHF_AUTOIX[i],0)**2;
+      usq =  u(CHF_AUTOIX[i],0)**2;
      &     + u(CHF_AUTOIX[i],1)**2;
      &     + u(CHF_AUTOIX[i],2)**2]
-      
-      alpha(CHF_AUTOIX[i]) = min(alpha(CHF_AUTOIX[i]),
+
+      if ( (usq .gt. usq0) .and.
+     &     (h(CHF_AUTOIX[i]) .gt. TINY_THICKNESS) ) then
+         alpha(CHF_AUTOIX[i]) = min(alpha(CHF_AUTOIX[i]),
      &     a(CHF_AUTOIX[i])  * p(CHF_AUTOIX[i]) * usq**(-half))
+      end if
       
       CHF_ENDDO
 

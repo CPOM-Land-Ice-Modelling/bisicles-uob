@@ -219,6 +219,13 @@ public:
   /// diagnostic quantity -- sum(ice over flotation) at last timestepa
   Real m_lastVolumeAboveFlotation;
 
+  /// for the domain diagnostic data mask
+  bool m_mask_domain_diagnostic_data;
+  std::string m_domain_diagnostic_data_mask_file;
+  int m_num_domain_diagnostic_data_masks;
+  Vector<std::string> m_domain_diagnostic_data_mask_names;
+  RefCountedPtr<LevelData<FArrayBox> > m_domain_diagnostic_data_mask;
+  Real m_domain_diagnostic_data_mask_dx;
 };
 
   

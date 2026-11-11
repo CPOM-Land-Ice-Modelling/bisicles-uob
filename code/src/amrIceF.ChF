@@ -205,6 +205,7 @@ c ----------------------------------------------------
       subroutine SETFLOATINGBETA(CHF_FRA1[beta],
      &     CHF_CONST_FIA1[floatingMask],
      &     CHF_REAL[ice_free_beta],
+     &     CHF_REAL[min_beta],
      &     CHF_BOX[gridBox])
 
       integer CHF_AUTODECL[i]
@@ -213,7 +214,7 @@ c     original behaviour
       CHF_AUTOMULTIDO[gridBox; i]
       if (floatingMask(CHF_AUTOIX[i]).eq.FLOATINGMASKVAL) then
 c     floating ice
-         beta(CHF_AUTOIX[i]) = zero
+         beta(CHF_AUTOIX[i]) = min_beta
       else if (floatingMask(CHF_AUTOIX[i]).eq.OPENSEAMASKVAL) then
 c     open sea : set beta >- ice_free_beta (and hope that rhs, mu = 0)
          beta(CHF_AUTOIX[i]) = max(ice_free_beta,beta(CHF_AUTOIX[i]))
@@ -221,7 +222,7 @@ c     open sea : set beta >- ice_free_beta (and hope that rhs, mu = 0)
 c     open land : set beta = 100.0 (and hope that rhs, mu = 0)
          beta(CHF_AUTOIX[i]) = max(ice_free_beta,beta(CHF_AUTOIX[i]))
       else
-         beta(CHF_AUTOIX[i]) = max(1.0d-10,beta(CHF_AUTOIX[i]))
+         beta(CHF_AUTOIX[i]) = max(min_beta,beta(CHF_AUTOIX[i]))
       end if
       CHF_ENDDO
        
