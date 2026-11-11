@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>C/Fortran API - BISICLES user documents</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "C/Fortran API";
+        var mkdocs_page_input_path = "cdriver.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c++.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> BISICLES user documents
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Building and running</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../readme/">Generic instructions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../sites/">Site notes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../trouble/">Common issues</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Executables</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../driver/">Main program (driver)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../filetools/">File tools</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">C/Fortran API</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fortran-90-example">FORTRAN 90 example</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Run time options</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../io/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../geometry/">Ice sheet geometry</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../stress/">Stresses</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../thermodynamics/">Thermodynamics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../velocity/">Ice velocity</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../surfaceflux/">Surface fluxes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../leveldatainterface/">LevelData interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pythoninterface/">Python interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="../readme.md#running-bisicles-on-a-simple-problem">MISMIP3D</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineisland/">Pine Island Glacier</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineislandinverse/">PIG inverse problem</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Data viz / analysis</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../libamrfile/">Python/R/MATLAB (libamrfile)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../visit/">VisIt</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">BISICLES user documents</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Executables</li>
+      <li class="breadcrumb-item active">C/Fortran API</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="bisicles-cdriver-interface">BISICLES cdriver interface</h1>
+<h2 id="overview">Overview</h2>
+<p>The BISICLES cdriver interface allows a C or FORTRAN (or indeed, any
+language that can call simple C functions) to control BISICLES without
+any direct interaction with C++. The
+<a href="https://puma.nerc.ac.uk/svn/UniCiCles_svn/UniCiCles">UniCiCles</a>
+repository packages BISICLES and Chombo with a version of the
+Glimmer-CISM ice sheet model that is able to interface with BISICLES
+through cdriver. In effect, Glimmer-CISM hands over ice sheet dynamics
+to BISICLES but continues to compute GIA, interact with atmosphere
+models through glint, etc. FORTRAN models able to interact with
+Glimmer-CISM automatically gain the ability to interact with BISICLES.
+Source code documentation can be found at
+<a href="../code/doc/doxygen/html/cwrapper_8H.html">cwrapper_8H.md</a> if you
+gave built the doxygen documentation.</p>
+<p>In terms of the interface itself, it is possible to:</p>
+<ul>
+<li>create multiple BISICLES instances (for example, to simulate several
+    ice sheets in a global model);</li>
+<li>instruct BISICLES to read e.g surface mass balance data from a
+    rectangular array, potentially distributed across MPI ranks in
+    parallel programs;</li>
+<li>initialize BISICLES, including mesh generation;</li>
+<li>advance the ice sheet to a certain time;</li>
+<li>read data from BISICLES into rectangular arrays, again, potentially
+    distributed across MPI ranks.</li>
+</ul>
+<p>A calling program will typically:</p>
+<ol>
+<li>Set up MPI, if applicable</li>
+<li>Call bisicles_new_instance (C) or f_bisicles_new_instance (Fortran),
+    obtaining an integer key that will be used in all subsequent calls.</li>
+<li>Allocate memory for data to BISICLES to read, such as surface mass
+    balance</li>
+<li>Make multiple calls to (f _)bisicles_set_2d_data to instruct
+    BISICLES to read e.g surface mass balance from a particular array.</li>
+<li>Call (f _)bisicles_init_instance: after this point it is possible to
+    change the (e.g) surface mass balance data but <strong>not its memory
+    address</strong>.</li>
+<li>Call f_bisicles_get_2d_data to e.g the ice sheet upper surface
+    elevation into rectangular arrays.</li>
+<li>Modify (e.g) the surface mass balance data.</li>
+<li>Call (f _)bisicles_advance to instruct BISICLES to advance in time</li>
+<li>Repeat steps 6-8 till complete.</li>
+<li>Shut down the BISICLES instance by calling
+    (f _)bisicles_free_instance.</li>
+<li>Shut down MPI , if applicable.</li>
+</ol>
+<h2 id="fortran-90-example">FORTRAN 90 example</h2>
+<p>An example FORTRAN 90 program which controls BISICLES via the cdriver
+interface is provided with the source code
+<a href="../code/cdriver/testwrapper.F90">testwrapper.F90</a>. The usual
+combination of binary types (debug,optimized,mpi,petsc) can be built and
+linked with the appropriate compiled objects. For example, a
+non-optimized serial version can be compiled (assuming CXX=g++ and
+FC=gfortran) and run with:</p>
+<pre><code>  &gt; cd $BISICLES_HOME/code/cdriver
+  &gt; make ftestwrapper DEBUG=TRUE OPT=FALSE USE_PETSC=FALSE MPI=FALSE
+  &gt; ./ftestwrapper.2d.Linux.64.g++.gfortran.DEBUG.ex
+</code></pre>
+<p>For a optimized parallel (non-petsc) version, assuming MPICXX=mpiCC and
+FC=gfortan:</p>
+<pre><code>  &gt; cd $BISICLES_HOME/code/cdriver
+  &gt; make ftestwrapper DEBUG=TRUE OPT=TRUE MPI=TRUE USE_PETSC=FALSE
+  &gt; mpirun -np 4 ftestwrapper.2d.Linux.64.mpiCC.gfortran.DEBUG.OPT.MPI.ex
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../filetools/" class="btn btn-neutral float-left" title="File tools"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../io/" class="btn btn-neutral float-right" title="Input and output">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../filetools/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../io/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
