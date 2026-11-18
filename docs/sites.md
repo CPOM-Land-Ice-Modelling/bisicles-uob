@@ -86,8 +86,8 @@ configuration, used the file
 ### Blue Crystal Phase 5, GNU Compilers
 
 Blue Crystal Phase 5 in an x86 HPC managed by the Bristol Centre for Supercomputing. 
-It is in early release, with [some documentation](https://docs.isambard.ac.uk/specs).
-Some common programs are not yet installed, notably the is no python with 
+The OS is Rocky Linux 9.8. BC5 is in early release, with [some documentation](https://docs.isambard.ac.uk/specs).
+Some common programs are not yet installed, notably there is no python with 
 development compinents (Python.h etc) and the system perl is missing
 key packages for Chombo's build system. 
 
@@ -95,6 +95,8 @@ For now, hdf5, perl, python, and petsc can be found in /projects/b56av/bike, alo
 with Chombo and BISICLES. The bisicles binaries in /projects/b56av/bike/bisicles-uob
 will be rebuilt often, but always from the master branch of https://github.com/CPOM-Land-Ice-Modelling/bisicles-uob.git.
 Other bisicles-* directories are exprimental: use at your own risk.
+
+
 
 ### Isambard 3
 
