@@ -83,22 +83,18 @@ configuration, used the file
       cd $BISICLES_HOME/BISICLES/code/mk
       ln -s Make.defs.bp1 Make.defs.none
 
-### Blue Crystal Phase 4, GNU Compilers
+### Blue Crystal Phase 5, GNU Compilers
 
-Load the modules openmpi/5.0.3-gi7y and languages/python/biopython-1.83
-(this version is needed as python/3.12.3 contains a libmpi version that
-conflicts with the one in openmpi/5.0.3-gi7y). Add the commands below to
- ~/.bash_profile.
+Blue Crystal Phase 5 in an x86 HPC managed by the Bristol Centre for Supercomputing. 
+It is in early release, with [some documentation](https://docs.isambard.ac.uk/specs).
+Some common programs are not yet installed, notably the is no python with 
+development compinents (Python.h etc) and the system perl is missing
+key packages for Chombo's build system. 
 
-      module load languages/python/biopython-1.83
-      module load openmpi/5.0.3-gi7y
-
-Then follow the [generic instructions](readme.md). For BISICLES
-configuration, used the file
- $BISICLES_HOME/BISICLES/code/mk/Make.defs.bc4. For example,
-
-      cd $BISICLES_HOME/BISICLES/code/mk
-      ln -s Make.defs.bc4 Make.defs.none
+For now, hdf5, perl, python, and petsc can be found in /projects/b56av/bike, along
+with Chombo and BISICLES. The bisicles binaries in /projects/b56av/bike/bisicles-uob
+will be rebuilt often, but always from the master branch of https://github.com/CPOM-Land-Ice-Modelling/bisicles-uob.git.
+Other bisicles-* directories are exprimental: use at your own risk.
 
 ### Isambard 3
 
@@ -139,12 +135,11 @@ should contain:
     HDFINCFLAGS=   -I$(HDF5_SER_DIR)/include
     HDFMPIINCFLAGS=-I$(HDF5_PAR_DIR)/include
 
-The file  $BISICLES_HOME/Chombo/lib/mk/Make.defs.none should include
+The file  $BISICLES_HOME/BISICLES/code/mk/Make.defs.none should include
 
     PYTHON_INC=$(shell python3-config --includes)
     #--ldflags does not include -lpython for reasons that escape me
     PYTHON_LIBS=-lpython3.11 $(shell python3-config --ldflags)
-
 ## NERSC
 
 The US DOE-run National Energy Research Supercomputing Center (
