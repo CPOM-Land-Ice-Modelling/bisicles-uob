@@ -83,22 +83,52 @@ configuration, used the file
       cd $BISICLES_HOME/BISICLES/code/mk
       ln -s Make.defs.bp1 Make.defs.none
 
-### Blue Crystal Phase 4, GNU Compilers
+### Blue Crystal Phase 5, GNU Compilers
 
-Load the modules openmpi/5.0.3-gi7y and languages/python/biopython-1.83
-(this version is needed as python/3.12.3 contains a libmpi version that
-conflicts with the one in openmpi/5.0.3-gi7y). Add the commands below to
- ~/.bash_profile.
+Blue Crystal Phase 5 in an x86 HPC managed by the Bristol Centre for Supercomputing. 
+The OS is Rocky Linux 9.8. BC5 is in early release, with [some documentation](https://docs.isambard.ac.uk/specs).
+Some common programs are not yet installed, notably there is no python with 
+development compinents (Python.h etc) and the system perl is missing
+key packages for Chombo's build system. For now, hdf5, perl, python, and 
+petsc can be found in /projects/b56av/bike. There is no mpi module, but openmpi
+is installed in /opt/ohpc/pub/mpi/openmpi4-gnu12/4.1.5/
 
-      module load languages/python/biopython-1.83
-      module load openmpi/5.0.3-gi7y
+Run the following
 
-Then follow the [generic instructions](readme.md). For BISICLES
-configuration, used the file
- $BISICLES_HOME/BISICLES/code/mk/Make.defs.bc4. For example,
+module load gnu12
+export BIKE_DEPS=/projects/b56av/bike/
+export PATH=$BIKE_DEPS/python/bin/:$PATH
+export PATH=$BIKE_DEPS/perl/bin/:$PATH
+export PATH=/opt/ohpc/pub/mpi/openmpi4-gnu12/4.1.5/bin/:$PATH
+export PETSC_DIR=$BIKE_DEPS/petsc
+export HDF5_PAR_DIR=$BIKE_DEPS/hdf5/parallel
 
-      cd $BISICLES_HOME/BISICLES/code/mk
-      ln -s Make.defs.bc4 Make.defs.none
+It should then be possible to build in usual way. The file  
+$BISICLES_HOME/Chombo/lib/mk/Make.defs.local should contain:
+
+MPI=TRUE 
+OPT=TRUE
+DEBUG=TRUE
+CXX=g++
+FC=gfortran
+MPICXX=mpiCC
+USE_64=TRUE
+USE_FFTW=FALSE
+CH_CPP=$(CXX) -E -P -C
+cxxoptflags += -O3
+foptflags += -cpp -O3 
+USE_HDF=TRUE
+HDF5_SER_DIR=$(HDF5_PAR_DIR)# unless you decided to build serial versions for some reason 
+HDFLIBFLAGS=   -L$(HDF5_SER_DIR)/lib  -lhdf5 -lz -Wl,-rpath=$(HDF5_PAR_DIR)/lib
+HDFMPILIBFLAGS=-L$(HDF5_PAR_DIR)/lib  -lhdf5 -lz -Wl,-rpath=$(HDF5_PAR_DIR)/lib
+HDFINCFLAGS=   -I$(HDF5_SER_DIR)/include
+HDFMPIINCFLAGS=-I$(HDF5_PAR_DIR)/include
+
+The file  $BISICLES_HOME/BISICLES/code/mk/Make.defs.none should include
+
+PYTHON_INC=$(shell python3-config --includes)
+#--ldflags does not include -lpython for reasons that escape me
+PYTHON_LIBS=-lpython3.12 $(shell python3-config --ldflags)
 
 ### Isambard 3
 
@@ -139,12 +169,11 @@ should contain:
     HDFINCFLAGS=   -I$(HDF5_SER_DIR)/include
     HDFMPIINCFLAGS=-I$(HDF5_PAR_DIR)/include
 
-The file  $BISICLES_HOME/Chombo/lib/mk/Make.defs.none should include
+The file  $BISICLES_HOME/BISICLES/code/mk/Make.defs.none should include
 
     PYTHON_INC=$(shell python3-config --includes)
     #--ldflags does not include -lpython for reasons that escape me
     PYTHON_LIBS=-lpython3.11 $(shell python3-config --ldflags)
-
 ## NERSC
 
 The US DOE-run National Energy Research Supercomputing Center (

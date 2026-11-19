@@ -369,7 +369,7 @@ void IceNonlinearViscousTensor::setState(const Vector<LevelData<FArrayBox>*>& a_
 	      for ( BoxIterator bit(gridBox); bit.ok(); ++bit)
 		{
 		  const IntVect& iv = bit();
-		  Real usq = D_TERM(u(iv,0)*u(iv,0), + u(iv,1)*u(iv,1), + u(iv,2)*u(iv,2));
+		  Real usq = 1.0e-10 + D_TERM(u(iv,0)*u(iv,0), + u(iv,1)*u(iv,1), + u(iv,2)*u(iv,2));
 		  levelAlpha[dit](iv) += std::pow(asq * usq,p)*a; // alpha = a^(n-1) |u|^(n-1) a  => |alpha*u| = a^n |u|^n
  		}
 	    }

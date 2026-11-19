@@ -178,6 +178,7 @@ PressureLimitedBasalFrictionRelation::computeAlpha
       FORT_BFRICTIONPLIMITTSAI(CHF_FRA1(a_alpha,0),
 			       CHF_CONST_FRA(a_basalVel),
 			       CHF_CONST_FRA1(N,0),
+			       CHF_CONST_FRA1(thck,0),
 			       CHF_CONST_FRA1(f,0),
 			       CHF_BOX(a_box));
     }
