@@ -1,10 +1,12 @@
 # BISICLES calving front
 
 BISICLES represents the loss of ice at the ice sheet margin -- the
-calving front -- through a *calving model*, which is selected with the
+calving front -- through a *CalvingModel*, which is selected with the
 run-time option
 
     CalvingModel.type = ...
+
+The CalvingModel is closely connected with the [ice fraction advection model](icefrac.md).
 
 If you have built the doxygen code documentation, the C++ class
 hierarchy underlying all this is described at
@@ -12,12 +14,16 @@ hierarchy underlying all this is described at
 
 ## Calving models and run-time options
 
-The entry point for all calving is the static factory method
-`CalvingModel::parseCalvingModel`, which reads the `CalvingModel.type`
-entry and dispatches to the appropriate model class. The run-time options
-for each of the calving models are described below.
-
 ### All models
+
+Select an ice fraction advection model. By default the 'old' model (basic front tracking scheme) is
+enabled, equivalent to setting
+
+    amr.evolve_ice_frac = true # true by default 
+
+To choose the 'new' model, which was used in [CalvingMIP](https://tc.copernicus.org/articles/20/6453/2026/)
+
+    amr.evolve_ice_frac_2 = true # false by default
 
 To impose a calving front at a domain boundary, set the `CalvingModel.front_hi/lo` options.
 For example, if the domain is `0 < x < W, 0 < y < H` with a calving front at
@@ -29,13 +35,13 @@ For example, if the domain is `0 < x < W, 0 < y < H` with a calving front at
 Calving models by default reduce mean ice thickess and ice area fraction until both are zero.
 It is possible (but a bodge!) to limit reducution of mean ice thickness in previously ice covered regions 
 
-   CalvingModel.min_thickness = 10 
+    CalvingModel.min_thickness = 10 
 
 ### NoCalvingModel
 
     CalvingModel.type = NoCalvingModel
 
-This is the simplest calving model: no ice is removed and the usual result
+This is the simplest calving and default model: no ice is removed and the usual result
 will be calving front advance at the ice velocity.
 
 ### DomainEdgeCalvingModel
@@ -68,17 +74,24 @@ No run-time options are read by this model.
 ### BennCalvingModel
 
     CalvingModel.type = BennCalvingModel
-    BennCalvingModel.includeBasalCrevasses = false
-    BennCalvingModel.criticalStress = 0.0
-    BennCalvingModel.stressMeasure = FirstPrincipalStress
+    CalvingModel.includeBasalCrevasses = false
+    CalvingModel.criticalStress = 0.0
+    CalvingModel.stressMeasure = FirstPrincipalStress
 
 This is a crevasse calving model, following Benn (2007) and Nick et al
 (2011). The `crevasseWaterDepth` (or the older-style `waterDepth`) sets the
 water depth used in the crevasse depth calculation, and the `factor` is a
-dimensionless multiplier on the crevasse depth. Basal crevasses can be
+dimensionless multiplier on the crevasse depth. Both exploit the surface flux
+mechamism, e.g, to set factor = 2.0 on ice shelves 
+
+    CalvingModel.factor.type = maskedFlux
+    CalvingModel.factor.floating.type = constantFlux
+    CalvingModel.factor.floating.flux_value = 2.0 
+
+Basal crevasses can be
 included with `includeBasalCrevasses`. Calving occurs only where `R > criticalStress`
 for a range of `stressMeasure` choices: `FirstPrincipalStress`,
-`AlongFlowNormalStress`, `Trace`, or `MAX_STRESS_MEASURE`.
+`AlongFlowNormalStress`, `Trace`.
 
 ### ThicknessCalvingModel
 
@@ -192,14 +205,3 @@ ice flow:
 - The `CriterionToRateCalvingModel` converts a calving criterion into a
   scalar calving rate.
 
-## Calving in the time step
-
-Calving is applied to the ice thickness and ice fraction at the
-`PostThicknessAdvection` stage of the time step, after thickness
-advection and after the calving criterion has been evaluated. The ice
-fraction is evolved through advection when `amr.evolve_ice_frac` is set
-(and through the newer scheme selected by `amr.evolve_ice_frac_2`).
-
-In this way, calving and ice fraction advection are tightly coupled: the
-calving rate acts on the ice fraction field as it is being advected with
-the ice.
