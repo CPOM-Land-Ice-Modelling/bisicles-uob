@@ -89,14 +89,46 @@ Blue Crystal Phase 5 in an x86 HPC managed by the Bristol Centre for Supercomput
 The OS is Rocky Linux 9.8. BC5 is in early release, with [some documentation](https://docs.isambard.ac.uk/specs).
 Some common programs are not yet installed, notably there is no python with 
 development compinents (Python.h etc) and the system perl is missing
-key packages for Chombo's build system. 
+key packages for Chombo's build system. For now, hdf5, perl, python, and 
+petsc can be found in /projects/b56av/bike. There is no mpi module, but openmpi
+is installed in /opt/ohpc/pub/mpi/openmpi4-gnu12/4.1.5/
 
-For now, hdf5, perl, python, and petsc can be found in /projects/b56av/bike, along
-with Chombo and BISICLES. The bisicles binaries in /projects/b56av/bike/bisicles-uob
-will be rebuilt often, but always from the master branch of https://github.com/CPOM-Land-Ice-Modelling/bisicles-uob.git.
-Other bisicles-* directories are exprimental: use at your own risk.
+Run the following
 
+module load gnu12
+export BIKE_DEPS=/projects/b56av/bike/
+export PATH=$BIKE_DEPS/python/bin/:$PATH
+export PATH=$BIKE_DEPS/perl/bin/:$PATH
+export PATH=/opt/ohpc/pub/mpi/openmpi4-gnu12/4.1.5/bin/:$PATH
+export PETSC_DIR=$BIKE_DEPS/petsc
+export HDF5_PAR_DIR=$BIKE_DEPS/hdf5/parallel
 
+It should then be possible to build in usual way. The file  
+$BISICLES_HOME/Chombo/lib/mk/Make.defs.local should contain:
+
+MPI=TRUE 
+OPT=TRUE
+DEBUG=TRUE
+CXX=g++
+FC=gfortran
+MPICXX=mpiCC
+USE_64=TRUE
+USE_FFTW=FALSE
+CH_CPP=$(CXX) -E -P -C
+cxxoptflags += -O3
+foptflags += -cpp -O3 
+USE_HDF=TRUE
+HDF5_SER_DIR=$(HDF5_PAR_DIR)# unless you decided to build serial versions for some reason 
+HDFLIBFLAGS=   -L$(HDF5_SER_DIR)/lib  -lhdf5 -lz -Wl,-rpath=$(HDF5_PAR_DIR)/lib
+HDFMPILIBFLAGS=-L$(HDF5_PAR_DIR)/lib  -lhdf5 -lz -Wl,-rpath=$(HDF5_PAR_DIR)/lib
+HDFINCFLAGS=   -I$(HDF5_SER_DIR)/include
+HDFMPIINCFLAGS=-I$(HDF5_PAR_DIR)/include
+
+The file  $BISICLES_HOME/BISICLES/code/mk/Make.defs.none should include
+
+PYTHON_INC=$(shell python3-config --includes)
+#--ldflags does not include -lpython for reasons that escape me
+PYTHON_LIBS=-lpython3.12 $(shell python3-config --ldflags)
 
 ### Isambard 3
 
