@@ -4,9 +4,10 @@ User documentation is in the docs directory and at https://cpom-land-ice-modelli
 
 Developer documentation is in the code/docs directory.
 
-This repository begins with the version used to work on CalvingMIP (https://egusphere.copernicus.org/preprints/2026/egusphere-2026-1962/). It has 
-no history prior to that, because (a) there are many branches (b) the history includes files too large to be stored
-on GitHub. It is possible that we will provide a full history repo at some point, but there are no concrete plans.
+This repository begins in August 2023. It has  no history prior to that, because 
+(a) there are many branches 
+(b) the history includes files too large to be stored on GitHub. 
+It is possible that we will provide a full history repo at some point, but there are no concrete plans.
 
 Contributors to Aug 2023 (from svn history):
 

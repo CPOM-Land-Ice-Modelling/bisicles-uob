@@ -542,8 +542,6 @@ void JFNKSolver::define(const ProblemDomain& a_coarseDomain,
 inline
 int JFNKSolver::solve(Vector<LevelData<FArrayBox>* >& a_u,
 		      Vector<LevelData<FArrayBox>* >& a_calvedIce,
-		      Vector<LevelData<FArrayBox>* >& a_addedIce,
-		      Vector<LevelData<FArrayBox>* >& a_removedIce,
 		      Real& a_initialResidualNorm, Real& a_finalResidualNorm,
 		      const Real a_convergenceMetric,  
 		      const Vector<LevelData<FArrayBox>* >& a_rhs,
@@ -557,7 +555,7 @@ int JFNKSolver::solve(Vector<LevelData<FArrayBox>* >& a_u,
 
   //Vector<LevelData<FluxBox>* > muCoef(a_maxLevel,NULL);
  
-  int rc =  solve(a_u, a_calvedIce, a_addedIce, a_removedIce,
+  int rc =  solve(a_u, a_calvedIce, 
 		  a_initialResidualNorm, a_finalResidualNorm,
 		  a_convergenceMetric, false, a_rhs, a_C, a_C0, a_A, 
 		  a_muCoef, a_coordSys,
@@ -576,8 +574,6 @@ int JFNKSolver::solve(Vector<LevelData<FArrayBox>* >& a_u,
 
 void JFNKSolver::eliminateFastIce(Vector<LevelData<FArrayBox>* >& a_velocity,
 				  Vector<LevelData<FArrayBox>* >& a_calvedIce,
-				  Vector<LevelData<FArrayBox>* >& a_addedIce,
-				  Vector<LevelData<FArrayBox>* >& a_removedIce,
 				  Vector<LevelData<FArrayBox>* >& a_rhs,
 				  Vector<RefCountedPtr<LevelSigmaCS > >& a_coordSys,
 				  IceNonlinearViscousTensor&  a_current)
@@ -589,7 +585,7 @@ void JFNKSolver::eliminateFastIce(Vector<LevelData<FArrayBox>* >& a_velocity,
   if ( m_config.m_eliminateFastIce)
     {
       int eliminated = IceUtility::eliminateFastIce
-	(a_coordSys, a_velocity, a_calvedIce, a_addedIce, a_removedIce,
+	(a_coordSys, a_velocity, a_calvedIce, 
 	 m_grids , m_domains, 
 	 m_refRatios, m_dxs[0][0], a_velocity.size() -1, 
 	 m_config.m_eliminateRemoteIceMaxIter,  m_config.m_eliminateRemoteIceTol, 
@@ -608,8 +604,6 @@ void JFNKSolver::eliminateFastIce(Vector<LevelData<FArrayBox>* >& a_velocity,
 
 int JFNKSolver::solve(Vector<LevelData<FArrayBox>* >& a_u,
 		      Vector<LevelData<FArrayBox>* >& a_calvedIce,
-		      Vector<LevelData<FArrayBox>* >& a_addedIce,
-		      Vector<LevelData<FArrayBox>* >& a_removedIce,
 		      Real& a_initialResidualNorm, Real& a_finalResidualNorm,
 		      const Real a_convergenceMetric,
 		      const bool a_linear, 
@@ -668,7 +662,7 @@ int JFNKSolver::solve(Vector<LevelData<FArrayBox>* >& a_u,
     m_config.m_muMin,  m_config.m_muMax, m_config.m_scale, m_config.m_artificialDragCoef, m_config.m_artificialDragPower);
 
  // eliminate fast ice if required:
- eliminateFastIce(localU, a_calvedIce, a_addedIce, a_removedIce, localRhs, a_coordSys, current);
+ eliminateFastIce(localU, a_calvedIce, localRhs, a_coordSys, current);
  current.setState(localU);
  current.setFaceViscCoef(faceMuCoef);
 
@@ -748,7 +742,8 @@ int JFNKSolver::solve(Vector<LevelData<FArrayBox>* >& a_u,
 	  
 	  //update u <- u + w*du for some w with minW < w <= 1.0.
 	  //When du is a JFNK step, allow w < 1 and w = 0 if ||f(u + minW * du)|| > ||f(u)||
-	  Real minW = (mode == JFNK_LINEARIZATION_MODE)? m_config.m_minStepFactor:1.0;
+	  //Real minW = (mode == JFNK_LINEARIZATION_MODE)? m_config.m_minStepFactor:1.0;
+	  Real minW = m_config.m_minStepFactor; 
 	  bool resetOnFail = (mode == JFNK_LINEARIZATION_MODE);
 
 	  resNorm = lineSearch(localU, residual, localRhs,  du, J, 
@@ -806,7 +801,7 @@ int JFNKSolver::solve(Vector<LevelData<FArrayBox>* >& a_u,
 	  done = resNorm < m_config.m_absTol || resNorm < convergenceMetric * m_config.m_relTol;
 	  
 	  //eliminate fast ice if needed
-	  eliminateFastIce(localU, a_calvedIce, a_addedIce, a_removedIce, localRhs, a_coordSys, current);
+	  eliminateFastIce(localU, a_calvedIce, localRhs, a_coordSys, current);
 	  
 	  ++iter;
 	}

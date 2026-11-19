@@ -923,17 +923,12 @@ void DamagePhysIBC:: artViscBC(FArrayBox&       a_F,
 }
 
 
-void DamageCalvingModel::applyCriterion(LevelData<FArrayBox>& a_thickness, 
-			       LevelData<FArrayBox>& a_calvedIce,
-			       LevelData<FArrayBox>& a_addedIce,
-			       LevelData<FArrayBox>& a_removedIce,
-			       LevelData<FArrayBox>& a_iceFrac, 
+void DamageCalvingModel::evaluateCriterion(LevelData<BaseFab<bool > >& a_critical, 
 			       const AmrIce& a_amrIce,
 			       int a_level,
 			       CalvingModel::Stage a_stage)
 {
-  m_calvingModelPtr->applyCriterion(a_thickness, a_calvedIce, a_addedIce,
-				    a_removedIce, a_iceFrac, a_amrIce, a_level, a_stage);
+  m_calvingModelPtr->evaluateCriterion(a_critical, a_amrIce, a_level, a_stage);
   
   if (a_stage == PostThicknessAdvection)
     {
@@ -950,28 +945,19 @@ void DamageCalvingModel::applyCriterion(LevelData<FArrayBox>& a_thickness,
       for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
 	  {
 	    const FArrayBox& hD = levelDamage[dit];
-	    FArrayBox& iceFrac = a_iceFrac[dit];
-	    FArrayBox& thck = a_thickness[dit];
-	    FArrayBox& calved = a_calvedIce[dit];
-	    FArrayBox& added = a_addedIce[dit];
-	    FArrayBox& removed = a_removedIce[dit];
+	    const FArrayBox& thck = levelCoords.getH()[dit];
+	    BaseFab<bool>& crit = a_critical[dit];
 	    const BaseFab<int>& mask = levelMask[dit];
 	    for (BoxIterator bit(levelCoords.grids()[dit]); bit.ok(); ++bit)
 	      {
 		const IntVect& iv = bit();
-		Real prevThck = thck(iv);
 		if ( (mask(iv) == FLOATINGMASKVAL) &&
 		     (thck(iv) - hD(iv) <  std::max( (1.0 - criticalDamage)*thck(iv), criticalThickness)))
 		  {
-		    thck(iv) = 0.0;
-		    // Record gain/loss of ice
-		    if (calved.box().contains(iv))
-		      {
-			updateCalvedIce(thck(iv),prevThck,mask(iv),added(iv),calved(iv),removed(iv));
-		      }
+		    crit(iv) = true;
 		  }
 		
 	      } // end for (BoxIterator bit(levelCoords.grids()[dit]); bit.ok; ++bit)
 	  }// end for (DataIterator dit(levelCoords.grids()); dit.ok(); ++dit)
     } // end if (a_stage == PostThicknessAdvection)
-} // end applyCriterion
+} // end evaluateCriterion
