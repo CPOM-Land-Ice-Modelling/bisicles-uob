@@ -39,9 +39,11 @@ airborne observations.
         forward and inverse problems.
     6.  [Surface fluxes](surfaceflux.md) (accumulation, ablation,
         energy balance, bedrock uplift)
-    7.  [LevelData interface](leveldatainterface.md), used to load
+    7.  [Calving front](calvingfront.md) (calving models and calving
+        flux)
+    8.  [LevelData interface](leveldatainterface.md), used to load
         meshed data, for example thickness and topography
-    8.  [Python interface](pythoninterface.md), used to compute data
+    9.  [Python interface](pythoninterface.md), used to compute data
          'on the fly ' with simple formulae
 4.  Example applications
     1.  Frank Pattyn 's [MISMIP3D](readme.md#example)
