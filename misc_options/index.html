@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Miscellaneous run-time options - BISICLES user documents</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Miscellaneous run-time options";
+        var mkdocs_page_input_path = "misc_options.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c++.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/c.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> BISICLES user documents
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Building and running</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../readme/">Generic instructions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../sites/">Site notes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../trouble/">Common issues</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Executables</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../driver/">Main program (driver)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../filetools/">File tools</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cdriver/">C/Fortran API</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Run time options</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../io/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../geometry/">Ice sheet geometry</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../stress/">Stresses</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../thermodynamics/">Thermodynamics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../velocity/">Ice velocity</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../surfaceflux/">Surface fluxes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../calvingfront/">Calving front</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../leveldatainterface/">LevelData interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pythoninterface/">Python interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="../readme.md#running-bisicles-on-a-simple-problem">MISMIP3D</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineisland/">Pine Island Glacier</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pineislandinverse/">PIG inverse problem</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Data viz / analysis</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../libamrfile/">Python/R/MATLAB (libamrfile)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../visit/">VisIt</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">BISICLES user documents</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Miscellaneous run-time options</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="miscellaneous-run-time-options">Miscellaneous run-time options</h1>
+<p>This page was rated by opencode/Deep Seek Flash 4.1 Free. YMMV</p>
+<p>This page collects run-time options that are not covered by the more
+focused pages: <a href="../io/">input/output</a>, <a href="../geometry/">geometry</a>,
+<a href="../stress/">stresses</a>, <a href="../thermodynamics/">thermodynamics</a>, <a href="../velocity/">ice
+velocity</a>, <a href="../surfaceflux/">surface fluxes</a>,
+<a href="../leveldatainterface/">LevelData</a>, <a href="../pythoninterface/">Python</a>, and
+<a href="../calvingfront/">calving</a>. It is mainly intended as a reference for
+less commonly used, advanced, or experimental settings.</p>
+<h2 id="how-options-are-read">How options are read</h2>
+<p>Almost every BISICLES option is read from the run-time configuration
+file (usually called <code>inputs.*</code>) using a Chombo <code>ParmParse</code> object. A
+<code>ParmParse</code> object is created with a <em>prefix</em>, and then queries keys
+within that prefix. For example</p>
+<pre><code>ParmParse pp("foo");
+Real bar = 0.0;             // default value
+pp.query("bar", bar);       // reads foo.bar if it is present
+</code></pre>
+<p>reads the entry</p>
+<pre><code>foo.bar = 1.0
+</code></pre>
+<p>from the configuration file and stores <code>1.0</code> in <code>bar</code>. If <code>foo.bar</code> is
+not present, <code>query</code> leaves <code>bar</code> at its default. By contrast, <code>get</code>
+raises an error when the entry is missing.</p>
+<p>The most important conventions are</p>
+<ul>
+<li>A prefix and key are joined with a dot, so <code>ParmParse pp("amr")</code> plus
+    <code>pp.query("cfl", cfl)</code> reads <code>amr.cfl</code>.</li>
+<li>Comments begin with <code>#</code>. Later entries override earlier entries.</li>
+<li>Values can be scalars, strings, or space-separated lists. Lists are
+    read with <code>queryarr</code>/<code>getarr</code>.</li>
+<li>Boolean values accept <code>true</code>/<code>false</code> (and <code>1</code>/<code>0</code>).</li>
+<li>Options can also be supplied as extra command-line arguments after
+    the inputs file, e.g.
+    <code>driver2d...ex inputs.run amr.maxLevel=4</code>. Chombo parses arguments
+    of the form <code>prefix.key=value</code> and they override the file.</li>
+</ul>
+<p>The tables below list the option name (including its prefix), the
+default value in the current code, and a short description. Defaults
+are only a guide: some options are only used when another option enables
+them.</p>
+<h2 id="physical-constants">Physical constants</h2>
+<p>These are read by the <code>constants</code> prefix. They are used to convert
+between model units and SI units, and to compute buoyancy and driving
+stress.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>constants.ice_density</code></td>
+<td><code>910.0</code></td>
+<td>Density of ice, kg m^-3.</td>
+</tr>
+<tr>
+<td><code>constants.sea_water_density</code></td>
+<td><code>1028.0</code></td>
+<td>Density of sea water, kg m^-3. Used for flotation and sea level.</td>
+</tr>
+<tr>
+<td><code>constants.mantle_density</code></td>
+<td><code>3313.0</code></td>
+<td>Mantle density, kg m^-3. Used by GIA and some surface fluxes.</td>
+</tr>
+<tr>
+<td><code>constants.gravity</code></td>
+<td><code>9.81</code></td>
+<td>Gravitational acceleration, m s^-2.</td>
+</tr>
+<tr>
+<td><code>constants.seconds_per_unit_time</code></td>
+<td>seconds in a tropical year</td>
+<td>Number of seconds in one model time unit. Set to <code>1.0</code> to run in seconds (see <a href="../io/#run-time-configuration-inputs-files">input/output</a>).</td>
+</tr>
+</tbody>
+</table>
+<p>Note that the Bueler GIA topography flux reads the sea water density as
+<code>constants.seaWater_density</code> (camel case), unlike the rest of the code,
+which uses <code>constants.sea_water_density</code>.</p>
+<h2 id="main-program-controls">Main program controls</h2>
+<p>These options are read by the <code>main</code> prefix, or by the <a href="../driver/">driver</a>
+directly.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main.domain_size</code></td>
+<td>required</td>
+<td>Size of the physical domain, one value per horizontal dimension, in metres.</td>
+</tr>
+<tr>
+<td><code>main.maxTime</code></td>
+<td>required</td>
+<td>Simulation end time, in model time units.</td>
+</tr>
+<tr>
+<td><code>main.maxStep</code></td>
+<td>required</td>
+<td>Maximum number of time steps to take.</td>
+</tr>
+<tr>
+<td><code>main.newTimeStep</code></td>
+<td><code>false</code></td>
+<td>Use the alternative fixed-step predictor-corrector driver (<code>AmrIce::timeStep2</code>) instead of the standard adaptive time stepping. Requires <code>amr.fixed_dt</code> to be positive.</td>
+</tr>
+<tr>
+<td><code>main.damage_model</code></td>
+<td><code>false</code></td>
+<td>Enable the continuum damage model. This wraps the selected constitutive relation in a damage relation and replaces the calving model with one that can calve on damage. See <a href="#continuum-damage-model">damage model</a>.</td>
+</tr>
+<tr>
+<td><code>main.melange_model</code></td>
+<td><code>false</code></td>
+<td>Enable the melange transport model. See <a href="#melange-model">melange model</a>.</td>
+</tr>
+<tr>
+<td><code>main.poutBaseName</code></td>
+<td><code>pout</code></td>
+<td>Base name for the per-process log files (<code>pout.0</code>, <code>pout.1</code>, ...). Also described in <a href="../io/#log-output-pout-files">input/output</a>.</td>
+</tr>
+</tbody>
+</table>
+<p><code>main.newTimeStep</code> is experimental. It requires a fixed time step and is
+normally only used for particular coupled or idealised configurations.</p>
+<h2 id="time-stepping-and-ice-evolution">Time stepping and ice evolution</h2>
+<p>These options are read from the <code>amr</code> prefix.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>amr.evolve_thickness</code></td>
+<td><code>true</code></td>
+<td>Evolve the ice thickness. Setting this to <code>false</code> holds the geometry fixed.</td>
+</tr>
+<tr>
+<td><code>amr.evolve_velocity</code></td>
+<td><code>true</code></td>
+<td>Recompute the velocity field as the simulation advances.</td>
+</tr>
+<tr>
+<td><code>amr.velocity_solve_interval</code></td>
+<td><code>1</code></td>
+<td>Recompute the velocity every n time steps. (Some older documentation calls this <code>amr.velocity_solver_interval</code>; the code reads <code>amr.velocity_solve_interval</code>.)</td>
+</tr>
+<tr>
+<td><code>amr.time_step_n_iter</code></td>
+<td><code>1</code></td>
+<td>Number of corrector iterations in the alternative time stepper: <code>0</code> is forward Euler, <code>1</code> is Heun, larger values approach Crank-Nicolson. Only used with <code>main.newTimeStep</code>.</td>
+</tr>
+<tr>
+<td><code>amr.velocity_exit</code></td>
+<td><code>1.0e+6</code></td>
+<td>If the maximum velocity exceeds this value (in model velocity units), write an error plot file and abort.</td>
+</tr>
+<tr>
+<td><code>amr.max_dt</code></td>
+<td>effectively unlimited</td>
+<td>Upper limit on the adaptive time step.</td>
+</tr>
+<tr>
+<td><code>amr.fixed_dt</code></td>
+<td><code>0.0</code></td>
+<td>If positive, use this fixed time step instead of the CFL-limited step. Also required by <code>main.newTimeStep</code>.</td>
+</tr>
+<tr>
+<td><code>amr.diffusion_treatment</code></td>
+<td><code>none</code></td>
+<td>Thickness diffusion treatment: <code>none</code> or <code>implicit</code>. The <code>explicit</code> option is not currently supported.</td>
+</tr>
+<tr>
+<td><code>amr.additional_diffusivity</code></td>
+<td><code>0.0</code></td>
+<td>Constant added to the thickness diffusivity.</td>
+</tr>
+<tr>
+<td><code>amr.finest_timestep_level</code></td>
+<td><code>-1</code></td>
+<td>If non-negative, evolve thickness and internal energy only on levels up to this level, then interpolate the result to finer levels. <code>-1</code> evolves all levels.</td>
+</tr>
+<tr>
+<td><code>amr.temporal_accuracy</code></td>
+<td><code>1</code></td>
+<td>Time integration order selector. Currently <code>1</code> is the only working option.</td>
+</tr>
+<tr>
+<td><code>amr.additional_velocity</code></td>
+<td><code>false</code></td>
+<td>Include an additional (shallow-ice) velocity contribution in the L1L2 constitutive relation.</td>
+</tr>
+<tr>
+<td><code>amr.domainLoIndex</code></td>
+<td><code>0</code> (per direction)</td>
+<td>Lower index of the base-level domain. Useful for domains whose index space does not start at zero.</td>
+</tr>
+<tr>
+<td><code>amr.limit_margin_velocity</code></td>
+<td><code>false</code></td>
+<td>Limit excessive velocities at ice margins after the velocity solve.</td>
+</tr>
+<tr>
+<td><code>amr.reset_floating_friction</code></td>
+<td><code>true</code></td>
+<td>Set the basal friction coefficient to zero on floating ice before the velocity solve, using a thickness-above-flotation interpolation at the grounding line.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="thickness-advection">Thickness advection</h3>
+<p>When <code>amr.temporal_accuracy</code> is less than <code>3</code>, thickness is advected with
+the Chombo <code>PatchGodunov</code> scheme. Its options are read from the
+<code>amr.thickness_advection</code> prefix.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>amr.thickness_advection.normal_pred_order</code></td>
+<td><code>2</code></td>
+<td>Order of the normal predictor.</td>
+</tr>
+<tr>
+<td><code>amr.thickness_advection.fourth_order_slopes</code></td>
+<td><code>true</code></td>
+<td>Use fourth-order limited slopes rather than second-order slopes.</td>
+</tr>
+<tr>
+<td><code>amr.thickness_advection.artificial_viscosity</code></td>
+<td><code>0.0</code></td>
+<td>Artificial viscosity coefficient. Zero disables artificial viscosity.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="holding-ice-fixed-and-prescribing-mass-balance">Holding ice fixed and prescribing mass balance</h3>
+<p>These options are used to keep parts of the ice sheet from evolving by
+modifying the basal mass balance, or to hold the grounding line.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>amr.grounded_ice_stable</code></td>
+<td><code>false</code></td>
+<td>Modify the basal mass balance so that grounded ice does not change thickness.</td>
+</tr>
+<tr>
+<td><code>amr.floating_ice_stable</code></td>
+<td><code>false</code></td>
+<td>Modify the basal mass balance so that floating ice does not change thickness.</td>
+</tr>
+<tr>
+<td><code>amr.grounded_ice_basal_flux_is_dhdt</code></td>
+<td><code>false</code></td>
+<td>Set the grounded-ice basal flux to balance surface flux and divergence, i.e. impose <code>dh/dt = 0</code>.</td>
+</tr>
+<tr>
+<td><code>amr.floating_ice_basal_flux_is_dhdt</code></td>
+<td><code>false</code></td>
+<td>Set the floating-ice basal flux to balance surface flux and divergence, i.e. impose <code>dh/dt = 0</code>.</td>
+</tr>
+<tr>
+<td><code>amr.floating_ice_basal_flux_is_min_dhdt</code></td>
+<td><code>false</code></td>
+<td>Modify the floating-ice basal flux so that floating ice cannot thin, but is allowed to thicken.</td>
+</tr>
+<tr>
+<td><code>amr.grounding_line_stable</code></td>
+<td><code>false</code></td>
+<td>Modify the surface mass balance near the grounding line to keep grounded ice just above flotation, discouraging grounding-line migration.</td>
+</tr>
+<tr>
+<td><code>amr.mask_stable_sources</code></td>
+<td><code>false</code></td>
+<td>Apply the stable-source modifications only where a supplied mask is zero.</td>
+</tr>
+<tr>
+<td><code>amr.stable_sources_mask_file</code></td>
+<td>empty</td>
+<td>hdf5 file containing the stable-sources mask.</td>
+</tr>
+<tr>
+<td><code>amr.stable_sources_mask_name</code></td>
+<td><code>stable_sources_mask</code></td>
+<td>Variable name of the stable-sources mask in that file.</td>
+</tr>
+<tr>
+<td><code>amr.grounding_line_proximity_scale</code></td>
+<td><code>1.0e+4</code></td>
+<td>Length scale (metres) for the exponentially decaying grounding-line proximity field used by <code>groundingLineLocalizedFlux</code> and the Python interface.</td>
+</tr>
+<tr>
+<td><code>amr.grounding_line_proximity_calc_type</code></td>
+<td><code>0</code></td>
+<td>Selects the coefficient used when solving for the grounding-line proximity field. <code>0</code> is the historical behaviour; values greater than zero use a squared coefficient.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ice-fraction-and-source-masking">Ice fraction and source masking</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>amr.mask_sources</code></td>
+<td><code>true</code></td>
+<td>Multiply surface and basal thickness sources by the ice area fraction.</td>
+</tr>
+<tr>
+<td><code>amr.frac_sources</code></td>
+<td><code>true</code></td>
+<td>Synonym for <code>amr.mask_sources</code>.</td>
+</tr>
+<tr>
+<td><code>amr.evolve_ice_frac</code></td>
+<td>derived</td>
+<td>Advect the ice area fraction. By default this is true unless thickness evolution is inhibited by one of the stable-ice options.</td>
+</tr>
+<tr>
+<td><code>amr.evolve_ice_frac_2</code></td>
+<td><code>false</code></td>
+<td>Use the alternative ice-fraction advection scheme. Setting this true also enables <code>amr.evolve_ice_frac</code>.</td>
+</tr>
+<tr>
+<td><code>amr.floating_check_ocean_connected</code></td>
+<td><code>false</code></td>
+<td>When holding floating ice stable, only apply the adjustment to floating ice that is connected to the open ocean.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="removing-remote-ice">Removing remote ice</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>amr.eliminate_remote_ice</code></td>
+<td><code>false</code></td>
+<td>Identify floating ice that is not connected to grounded ice and remove it. Very thin isolated grounded cells are removed at the same time.</td>
+</tr>
+<tr>
+<td><code>amr.eliminate_remote_ice_max_iter</code></td>
+<td><code>10</code></td>
+<td>Maximum number of iterations in the remote-ice elimination.</td>
+</tr>
+<tr>
+<td><code>amr.eliminate_remote_ice_tol</code></td>
+<td><code>1.0</code></td>
+<td>Thickness tolerance used when eliminating remote ice.</td>
+</tr>
+<tr>
+<td><code>amr.eliminate_remote_ice_after_regrid</code></td>
+<td><code>false</code></td>
+<td>Also run remote-ice elimination immediately after regridding.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="initial-velocity-guess">Initial velocity guess</h3>
+<p>By default BISICLES can construct an inexpensive initial guess before
+the first nonlinear velocity solve. These options control that guess.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>amr.do_initial_velocity_solve</code></td>
+<td><code>true</code></td>
+<td>Perform the velocity solve when the model is initialized.</td>
+</tr>
+<tr>
+<td><code>amr.do_initial_velocity_guess</code></td>
+<td><code>false</code></td>
+<td>Construct a semi-informed initial guess before the first solve.</td>
+</tr>
+<tr>
+<td><code>amr.initial_velocity_guess_type</code></td>
+<td><code>0</code></td>
+<td><code>0</code>: sliding-law guess; <code>1</code>: constant-viscosity solve; <code>2</code>: a supplied function.</td>
+</tr>
+<tr>
+<td><code>amr.initial_velocity_guess_const_mu</code></td>
+<td><code>1.0e+7</code></td>
+<td>Constant viscosity used when <code>amr.initial_velocity_guess_type = 1</code>.</td>
+</tr>
+<tr>
+<td><code>amr.initial_velocity_guess_solver_type</code></td>
+<td><code>1</code></td>
+<td>Solver for the constant-viscosity guess: <code>0</code> Picard, <code>1</code> JFNK.</td>
+</tr>
+<tr>
+<td><code>amr.initial_velocity_guess_const_vel</code></td>
+<td><code>0 0</code></td>
+<td>Constant initial velocity used together with the constant-viscosity guess and a nonlinear basal friction law.</td>
+</tr>
+<tr>
+<td><code>amr.initial_velocity_function_type</code></td>
+<td><code>constant</code></td>
+<td>When <code>amr.initial_velocity_guess_type = 2</code>, the function type. <code>flowline</code> reads a piecewise-linear flowline profile.</td>
+</tr>
+<tr>
+<td><code>amr.initial_velocity_function_flowline_dx</code></td>
+<td>required for flowline</td>
+<td>Spacing of the flowline data.</td>
+</tr>
+<tr>
+<td><code>amr.initial_velocity_function_flowline_file</code></td>
+<td>required for flowline</td>
+<td>File containing the flowline data.</td>
+</tr>
+<tr>
+<td><code>amr.initial_velocity_function_flowline_set</code></td>
+<td>required for flowline</td>
+<td>Name of the data set in that file.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="thermodynamics-smoothing">Thermodynamics smoothing</h2>
+<p>The <code>Thermodynamics</code> prefix controls optional horizontal smoothing of the
+internal energy and till water depth. Smoothing is applied with a
+Helmholtz solve every <code>smooth_interval</code> steps.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Thermodynamics.smooth_interval</code></td>
+<td><code>-1</code> (disabled)</td>
+<td>Smooth internal energy every n steps.</td>
+</tr>
+<tr>
+<td><code>Thermodynamics.length_scale</code></td>
+<td><code>sqrt(IceConductivity()/IceHeatCapacity())</code></td>
+<td>Smoothing length scale, in metres.</td>
+</tr>
+<tr>
+<td><code>Thermodynamics.till_water_smooth_interval</code></td>
+<td><code>-1</code> (disabled)</td>
+<td>Smooth the till water depth every n steps.</td>
+</tr>
+<tr>
+<td><code>Thermodynamics.till_water_length_scale</code></td>
+<td><code>sqrt(IceConductivity()/IceHeatCapacity())</code></td>
+<td>Smoothing length scale for till water.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mesh-refinement-and-tagging">Mesh refinement and tagging</h2>
+<h3 id="grid-generation">Grid generation</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>amr.tagCap</code></td>
+<td><code>100</code></td>
+<td>Maximum level index considered when tagging cells for refinement.</td>
+</tr>
+<tr>
+<td><code>amr.max_box_size</code></td>
+<td><code>64</code></td>
+<td>Maximum size of a patch on the finest level.</td>
+</tr>
+<tr>
+<td><code>amr.max_base_grid_size</code></td>
+<td>same as <code>max_box_size</code></td>
+<td>Maximum size of a base-level patch.</td>
+</tr>
+<tr>
+<td><code>amr.blockFactor</code></td>
+<td><code>-1</code></td>
+<td>Chombo block factor for grid generation. <code>-1</code> uses the Chombo default.</td>
+</tr>
+<tr>
+<td><code>amr.fill_ratio</code></td>
+<td><code>-1</code></td>
+<td>Chombo fill ratio for grid generation. <code>-1</code> uses the Chombo default.</td>
+</tr>
+<tr>
+<td><code>amr.nestingRadius</code></td>
+<td><code>1</code> (<code>3</code> with PETSc)</td>
+<td>Required nesting radius between levels. PETSc builds force at least <code>3</code>.</td>
+</tr>
+<tr>
+<td><code>amr.interpolate_zb</code></td>
+<td><code>true</code></td>
+<td>Interpolate the bedrock topography when refining, rather than re-reading it.</td>
+</tr>
+<tr>
+<td><code>amr.regrid_thickness_interpolation_method</code></td>
+<td><code>0</code></td>
+<td>Thickness interpolation on regrid: <code>0</code> interpolate thickness, <code>1</code> interpolate upper and lower surfaces and use fine bedrock on grounded cells, <code>2</code> take the maximum thickness.</td>
+</tr>
+<tr>
+<td><code>amr.tags_grow</code></td>
+<td><code>1</code></td>
+<td>Grow the tagged region by this many cells in every direction.</td>
+</tr>
+<tr>
+<td><code>amr.tags_grow_dir</code></td>
+<td><code>0 0</code></td>
+<td>Grow tags further in each direction; the actual growth in direction <code>d</code> is <code>max(0, tags_grow_dir[d] - tags_grow)</code>.</td>
+</tr>
+<tr>
+<td><code>amr.tagSubsetBoxesFile</code></td>
+<td>empty</td>
+<td>File containing per-level boxes; tagging is restricted to these boxes.</td>
+</tr>
+<tr>
+<td><code>amr.gridsFile</code></td>
+<td>empty</td>
+<td>Use predefined grids read from this file instead of generating them at start-up.</td>
+</tr>
+</tbody>
+</table>
+<p>The predefined grids file used by <code>amr.gridsFile</code> has the format</p>
+<pre><code>numberOfLevels
+numGridsOnLevel1
+lo hi
+lo hi
+...
+numGridsOnLevel2
+lo hi
+...
+</code></pre>
+<p>where <code>lo hi</code> are Chombo index-space boxes. Level 0 is generated
+automatically from the domain and <code>amr.max_base_grid_size</code>. The file
+must contain at most <code>amr.maxLevel + 1</code> levels.</p>
+<h3 id="tagging-criteria">Tagging criteria</h3>
+<p>If no tagging criterion is enabled, BISICLES falls back to
+<code>amr.tag_on_grad_velocity = true</code>. Otherwise the criteria below are
+combined (a cell is tagged if any enabled criterion tags it).</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>amr.tag_on_grad_velocity</code></td>
+<td><code>false</code></td>
+<td>Tag where the undivided gradient of the horizontal velocity exceeds <code>amr.tagging_val</code>.</td>
+</tr>
+<tr>
+<td><code>amr.tagging_val</code></td>
+<td><code>0.1</code></td>
+<td>Threshold for <code>amr.tag_on_grad_velocity</code>.</td>
+</tr>
+<tr>
+<td><code>amr.tag_on_laplacian_velocity</code></td>
+<td><code>false</code></td>
+<td>Tag where the undivided Laplacian of the velocity exceeds <code>amr.lap_vel_tagging_val</code>.</td>
+</tr>
+<tr>
+<td><code>amr.tag_on_grounded_laplacian_velocity</code></td>
+<td><code>false</code></td>
+<td>As above, but only on grounded ice.</td>
+</tr>
+<tr>
+<td><code>amr.lap_vel_tagging_val</code></td>
+<td><code>1.0</code> (required when enabled)</td>
+<td>Threshold for either Laplacian criterion.</td>
+</tr>
+<tr>
+<td><code>amr.lap_vel_tagging_max_basal_friction_coef</code></td>
+<td><code>1.2e+300</code></td>
+<td>Only apply the Laplacian criterion where the basal friction coefficient is below this value.</td>
+</tr>
+<tr>
+<td><code>amr.tag_on_strain_rate_invariant</code></td>
+<td><code>false</code></td>
+<td>Tag where the second invariant of the strain-rate tensor, scaled by <code>dx^2</code>, exceeds <code>amr.strain_rate_invariant_tagging_val</code>.</td>
+</tr>
+<tr>
+<td><code>amr.strain_rate_invariant_tagging_val</code></td>
+<td><code>0.1</code> (required when enabled)</td>
+<td>Threshold for the strain-rate-invariant criterion.</td>
+</tr>
+<tr>
+<td><code>amr.tag_on_velocity_rhs</code></td>
+<td><code>false</code></td>
+<td>Tag where the magnitude of the velocity right-hand side multiplied by <code>dx</code> exceeds <code>amr.velocity_rhs_tagging_val</code>.</td>
+</tr>
+<tr>
+<td><code>amr.velocity_rhs_tagging_val</code></td>
+<td><code>1.0</code> (required when enabled)</td>
+<td>Threshold for the velocity-RHS criterion.</td>
+</tr>
+<tr>
+<td><code>amr.tag_grounding_line</code></td>
+<td><code>false</code></td>
+<td>Tag cells adjacent to the grounding line where the velocity exceeds a threshold.</td>
+</tr>
+<tr>
+<td><code>amr.grounding_line_tagging_min_vel</code></td>
+<td><code>200.0</code> (required when enabled)</td>
+<td>Minimum speed for grounding-line tagging.</td>
+</tr>
+<tr>
+<td><code>amr.grounding_line_tagging_max_basal_friction_coef</code></td>
+<td><code>1.2e+300</code></td>
+<td>Only apply grounding-line tagging where the basal friction coefficient is below this value.</td>
+</tr>
+<tr>
+<td><code>amr.tag_vel_dx</code></td>
+<td><code>false</code></td>
+<td>Tag where <code>|u| dx</code> exceeds <code>amr.vel_dx_tagging_val</code>, up to a specified finest level. This mimics the meshes produced by observed-velocity-based controllers.</td>
+</tr>
+<tr>
+<td><code>amr.vel_dx_tagging_val</code></td>
+<td><code>0.0</code> (required when enabled)</td>
+<td>Threshold for <code>amr.tag_vel_dx</code>.</td>
+</tr>
+<tr>
+<td><code>amr.vel_dx_finest_level_grounded</code></td>
+<td><code>-1</code></td>
+<td>Refine on <code>|u| dx</code> below this level on grounded ice.</td>
+</tr>
+<tr>
+<td><code>amr.vel_dx_finest_level_floating</code></td>
+<td>same as grounded</td>
+<td>As above, on floating ice.</td>
+</tr>
+<tr>
+<td><code>amr.tag_thin_cavity</code></td>
+<td><code>false</code></td>
+<td>Tag floating ice thinner than <code>amr.tag_thin_cavity_thickness</code>.</td>
+</tr>
+<tr>
+<td><code>amr.tag_thin_cavity_thickness</code></td>
+<td>tiny thickness</td>
+<td>Thickness threshold for <code>amr.tag_thin_cavity</code>.</td>
+</tr>
+<tr>
+<td><code>amr.tag_ice_margin</code></td>
+<td><code>false</code></td>
+<td>Tag where the ice area fraction is close to <code>0.5</code>, on levels below <code>amr.margin_finest_level</code>.</td>
+</tr>
+<tr>
+<td><code>amr.margin_finest_level</code></td>
+<td><code>maxLevel + 1</code></td>
+<td>Highest level on which ice-margin tagging is applied.</td>
+</tr>
+<tr>
+<td><code>amr.tag_all_ice</code></td>
+<td><code>false</code></td>
+<td>Tag every cell containing ice.</td>
+</tr>
+<tr>
+<td><code>amr.tag_all_ice_on_level_0</code></td>
+<td><code>false</code></td>
+<td>Tag every cell containing ice on level 0 only.</td>
+</tr>
+<tr>
+<td><code>amr.tag_entire_domain</code></td>
+<td><code>false</code></td>
+<td>Tag the whole domain (useful for uniform refinement tests).</td>
+</tr>
+<tr>
+<td><code>amr.tag_on_div_H_grad_vel</code></td>
+<td><code>false</code></td>
+<td>Tag where <code>div(H grad u)</code> exceeds <code>amr.div_H_grad_vel_tagging_val</code>.</td>
+</tr>
+<tr>
+<td><code>amr.div_H_grad_vel_tagging_val</code></td>
+<td><code>1.0</code> (required when enabled)</td>
+<td>Threshold for the <code>div(H grad u)</code> criterion.</td>
+</tr>
+<tr>
+<td><code>amr.tag_in_regions</code></td>
+<td><code>false</code></td>
+<td>Tag inside rectangular regions read from <code>amr.tag_regions_file</code>.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="tagging-in-regions">Tagging in regions</h4>
+<p>When <code>amr.tag_in_regions = true</code>, the file named by
+<code>amr.tag_regions_file</code> must contain</p>
+<pre><code>numberOfRegions
+xlo ylo xhi yhi resolution
+xlo ylo xhi yhi resolution
+...
+</code></pre>
+<p>with one line per region. Coordinates are in physical space. A region is
+tagged on a level while its requested resolution is finer than that
+level's mesh spacing.</p>
+<h4 id="tagging-inside-a-subset-of-boxes">Tagging inside a subset of boxes</h4>
+<p><code>amr.tagSubsetBoxesFile</code> names a file that masks the tagged cells: after
+the usual criteria have run on a level, any tags outside the boxes listed
+for that level are discarded. The file lists levels in order, each as
+either <code>level N</code> or <code>domain box</code>, followed by the number of boxes and
+then the boxes in Chombo index-space syntax:</p>
+<pre><code>level 0
+1
+0 0 99 99
+level 1
+2
+0 0 49 49
+50 50 99 99
+</code></pre>
+<h4 id="python-tagging">Python tagging</h4>
+<p>When BISICLES is built with Python support,</p>
+<pre><code>amr.tag_python = true
+amr.tag_python_module = mymodule
+amr.tag_python_function = mytag
+</code></pre>
+<p>calls <code>mytag(x, y, dx, thickness, topography)</code> in <code>mymodule.py</code> for each
+cell. A positive return value tags the cell. This is a convenient way to
+refine around arbitrary geometric features without a LevelData file.</p>
+<h2 id="velocity-solver-controls">Velocity solver controls</h2>
+<p>The choice of velocity solver is described in <a href="../velocity/">ice
+velocity</a>. The options below tune the solvers themselves.</p>
+<h3 id="amr-solver-controls"><code>amr</code> solver controls</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>amr.max_solver_iterations</code></td>
+<td><code>-1</code></td>
+<td>Override the solver's own maximum iteration count. <code>-1</code> leaves the solver default.</td>
+</tr>
+<tr>
+<td><code>amr.velocity_solver_tolerance</code></td>
+<td><code>1.0e-10</code></td>
+<td>Override the solver tolerance.</td>
+</tr>
+<tr>
+<td><code>amr.do_initial_velocity_solve</code></td>
+<td><code>true</code></td>
+<td>See <a href="#initial-velocity-guess">initial velocity guess</a>.</td>
+</tr>
+<tr>
+<td><code>amr.do_initial_velocity_guess</code></td>
+<td><code>false</code></td>
+<td>See <a href="#initial-velocity-guess">initial velocity guess</a>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="jfnk-solver">JFNK solver</h3>
+<p>The JFNK solver reads the <code>JFNKSolver</code> prefix. The most commonly used
+options are demonstrated in <a href="../velocity/">ice velocity</a> and
+<a href="../pineisland/">Pine Island Glacier</a>; the remainder are listed here for
+reference.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>JFNKSolver.maxIter</code></td>
+<td><code>15</code></td>
+<td>Maximum number of Newton iterations.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.maxIter_init</code></td>
+<td>same as <code>maxIter</code></td>
+<td>Maximum number of Newton iterations for the initial solve.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.absTol</code></td>
+<td><code>1.0e-10</code></td>
+<td>Absolute convergence tolerance.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.relTol</code></td>
+<td><code>1.0e-10</code></td>
+<td>Relative convergence tolerance.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.normType</code></td>
+<td><code>0</code></td>
+<td>Norm used for the convergence test.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.verbosity</code></td>
+<td><code>5</code></td>
+<td>Solver logging level.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.solverType</code></td>
+<td><code>0</code> (Relax)</td>
+<td>Linear solver: <code>0</code> Relax, <code>1</code> BiCGStab, <code>2</code> GMRES (disabled), <code>3</code> CG, <code>4</code> PETSc.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.bottom_solver_type</code></td>
+<td><code>0</code> (BiCGStab)</td>
+<td>Multigrid bottom solver: <code>0</code> BiCGStab, <code>1</code> PETSc, <code>2</code> Relax.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.RelaxRelTol</code></td>
+<td><code>1.0e-3</code></td>
+<td>Relative tolerance for the Relax linear solver. <code>RelaxTol</code> is a synonym.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.maxRelaxIter</code></td>
+<td><code>10</code></td>
+<td>Maximum iterations for the Relax solver.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.RelaxHang</code></td>
+<td><code>0.25</code></td>
+<td>Hang parameter for the Relax solver.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.BiCGStabRelTol</code></td>
+<td><code>1.0e-3</code></td>
+<td>Relative tolerance for BiCGStab.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.maxBiCGStabIter</code></td>
+<td><code>10</code></td>
+<td>Maximum iterations for BiCGStab.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.CGRelTol</code></td>
+<td><code>1.0e-3</code></td>
+<td>Relative tolerance for CG.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.maxCGIter</code></td>
+<td><code>10</code></td>
+<td>Maximum iterations for CG.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.numMGSmooth</code></td>
+<td><code>8</code></td>
+<td>Number of smoothing sweeps in multigrid.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.numMGIter</code></td>
+<td><code>1</code></td>
+<td>Number of multigrid V-cycles per Krylov iteration.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.vtopSafety</code></td>
+<td><code>0.5</code></td>
+<td>Safety factor for the viscous-tensor operator.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.vtopRelaxTol</code></td>
+<td><code>1.0e-2</code></td>
+<td>Relaxation tolerance for the viscous-tensor operator.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.vtopRelaxMinIter</code></td>
+<td><code>8</code></td>
+<td>Minimum number of viscous-tensor smoothing sweeps.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.mg_solver_depth</code></td>
+<td><code>-1</code></td>
+<td>Maximum multigrid depth. <code>-1</code> uses all available levels.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.mgCoefficientAverageType</code></td>
+<td><code>0</code> (arithmetic)</td>
+<td>Chombo coefficient averaging type for multigrid.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.mgProlongType</code></td>
+<td>linear interpolation</td>
+<td>Chombo prolongation type for multigrid.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.lazyGSRB</code></td>
+<td>Chombo default</td>
+<td>Enable or disable lazy Gauss-Seidel red-black smoothing (Chombo trunk builds only).</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.h</code></td>
+<td><code>0.025</code></td>
+<td>Step size for the finite-difference Jacobian approximation.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.hAdaptive</code></td>
+<td><code>false</code></td>
+<td>Choose the finite-difference step adaptively.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.err</code></td>
+<td><code>1.0e-6</code></td>
+<td>Error parameter used by adaptive <code>h</code>.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.umin</code></td>
+<td><code>1.0e-6</code></td>
+<td>Minimum speed used by adaptive <code>h</code>.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.switchRate</code></td>
+<td><code>1.5</code></td>
+<td>Rate at which the solver switches from Picard to Newton iterations.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.minPicardIterations</code></td>
+<td><code>0</code></td>
+<td>Minimum number of Picard iterations before switching to Newton.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.minStepFactor</code></td>
+<td><code>1.0</code></td>
+<td>Smallest acceptable Newton step reduction factor.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.muMin</code></td>
+<td><code>0.0</code></td>
+<td>Minimum effective viscosity.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.muMax</code></td>
+<td><code>1.2e+300</code></td>
+<td>Maximum effective viscosity.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.scale</code></td>
+<td>model time units per tropical year</td>
+<td>Solve internally for <code>scale * u</code>, where <code>scale</code> converts the velocity to the solver's preferred units; the returned velocity is unscaled. This is <code>1</code> when running in years.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.writeResiduals</code></td>
+<td><code>false</code></td>
+<td>Write residual information at each iteration, useful for diagnosing failed solves.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.artificialDragCoef</code></td>
+<td><code>0.0</code></td>
+<td>Coefficient of an artificial drag applied everywhere, intended to improve conditioning.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.artificialDragPower</code></td>
+<td><code>8.0</code></td>
+<td>Exponent of the artificial drag.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.eliminateFastIce</code></td>
+<td><code>false</code></td>
+<td>Remove fast ice at the end of each Newton iteration.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.eliminateFastIceSpeed</code></td>
+<td><code>1.0e+5</code></td>
+<td>Speed above which ice is considered "fast".</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.eliminateFastIceEdgeOnly</code></td>
+<td><code>false</code></td>
+<td>Only remove fast ice adjacent to ice-free regions.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.eliminateRemoteIceTol</code></td>
+<td><code>1.0</code></td>
+<td>Thickness tolerance for remote-ice removal during the solve. Inherits <code>amr.eliminate_remote_ice_tol</code> if set.</td>
+</tr>
+<tr>
+<td><code>JFNKSolver.eliminateRemoteIceMaxIter</code></td>
+<td><code>10</code></td>
+<td>Maximum iterations for remote-ice removal during the solve. Inherits <code>amr.eliminate_remote_ice_max_iter</code> if set.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="petsc-nonlinear-solver">PETSc nonlinear solver</h3>
+<p>These options are read by the <code>petsc</code> prefix when using the experimental
+PETSc SNES velocity solver (<code>amr.velocity_solver_type = 2</code>). General
+PETSc linear-solver options are set in a <code>.petsrc</code> file, as described in
+<a href="../velocity/#option-petsc-linear-solvers">ice velocity</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>petsc.maxIter</code></td>
+<td><code>20</code></td>
+<td>Maximum number of nonlinear iterations.</td>
+</tr>
+<tr>
+<td><code>petsc.absNLTol</code></td>
+<td><code>1.0e-30</code></td>
+<td>Absolute nonlinear tolerance.</td>
+</tr>
+<tr>
+<td><code>petsc.relNLTol</code></td>
+<td><code>1.0e-6</code></td>
+<td>Relative nonlinear tolerance.</td>
+</tr>
+<tr>
+<td><code>petsc.minPicardIterations</code></td>
+<td><code>3</code></td>
+<td>Minimum number of Picard iterations before Newton.</td>
+</tr>
+<tr>
+<td><code>petsc.plotResidual</code></td>
+<td><code>false</code></td>
+<td>Write the residual history for plotting.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="picard-solver-initial-guess">Picard solver initial guess</h3>
+<p>When the constant-viscosity initial guess uses the Picard solver
+(<code>amr.initial_velocity_guess_type = 1</code> and
+<code>amr.initial_velocity_guess_solver_type = 0</code>), these options apply.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>picardSolver.linearsolver_tolerance</code></td>
+<td><code>1.0e-4</code></td>
+<td>Tolerance for the linear solve.</td>
+</tr>
+<tr>
+<td><code>picardSolver.max_picard_iterations</code></td>
+<td><code>1</code></td>
+<td>Maximum number of Picard iterations.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="basal-friction-tuning">Basal friction tuning</h2>
+<p>The basal friction law is selected with <code>main.basalFrictionRelation</code> and
+described in <a href="../stress/#basal-friction-relation">stresses</a>. The following
+options tune the built-in laws.</p>
+<h3 id="power-law">Power law</h3>
+<p>These are read from the <code>BasalFrictionPowerLaw</code> prefix.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BasalFrictionPowerLaw.fastSlidingSpeed</code></td>
+<td>negative (disabled)</td>
+<td>Speed above which an additional Joughin-style sliding term is applied. Negative disables the term.</td>
+</tr>
+<tr>
+<td><code>BasalFrictionPowerLaw.highThickness</code></td>
+<td>negative (effectively infinite)</td>
+<td>Effective thickness used by that fast-sliding term.</td>
+</tr>
+<tr>
+<td><code>BasalFrictionPowerLaw.oceanConnectivityCoef</code></td>
+<td><code>1.0</code></td>
+<td>Weight between thickness above flotation and full thickness in the effective-pressure factor, from <code>0</code> to <code>1</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>m</code> and <code>includeEffectivePressure</code> options are described in
+<a href="../stress/#power-law-basal-friction-relation">stresses</a>.</p>
+<p>A separate option, <code>InitialThickness.criticalHeightAboveFlotation</code>
+(default <code>0.0</code>, disabled), reduces the basal friction coefficient near
+the grounding line. When it is positive, cells whose thickness above
+flotation is below that value have their friction coefficient scaled
+down, using the initial thickness supplied by the <code>InitialThickness</code>
+surface flux. This requires a valid <code>InitialThickness</code> flux, e.g.</p>
+<pre><code>InitialThickness.type = LevelData
+InitialThickness.fileFormat = initial%4d.2d.hdf5
+InitialThickness.n = 1
+InitialThickness.name = thk
+</code></pre>
+<h3 id="pressure-limited-law">Pressure-limited law</h3>
+<p>These are read from the <code>BasalFrictionPressureLimitedLaw</code> prefix. The
+<code>model</code> and <code>coefficient</code> options are described in
+<a href="../stress/#pressure-limited-basal-friction-relation">stresses</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BasalFrictionPressureLimitedLaw.power</code></td>
+<td><code>1.0</code></td>
+<td>Exponent of the pressure-limited law.</td>
+</tr>
+<tr>
+<td><code>BasalFrictionPressureLimitedLaw.maxTillWaterDepth</code></td>
+<td><code>-1.0</code> (no limit)</td>
+<td>Maximum till water depth used when forming the effective pressure.</td>
+</tr>
+<tr>
+<td><code>BasalFrictionPressureLimitedLaw.tillPressureFactor</code></td>
+<td><code>0.97</code></td>
+<td>Till pressure factor (the <code>alpha</code> of Van Pelt and Oerlemans 2012).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="additional-plot-file-contents">Additional plot-file contents</h2>
+<p>The main plot-file options are described in
+<a href="../io/#plot-files-plot-2dhdf5-files">input/output</a>. The following options
+are also available.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>amr.write_preSolve_plotfiles</code></td>
+<td><code>false</code></td>
+<td>Write a plot file immediately before each velocity solve, with <code>preSolve</code> in the name.</td>
+</tr>
+<tr>
+<td><code>amr.write_vonmises_stress</code></td>
+<td><code>false</code></td>
+<td>Write the von Mises stress.</td>
+</tr>
+<tr>
+<td><code>amr.write_topography_sources</code></td>
+<td><code>false</code></td>
+<td>Write the bedrock/uplift source term from the topography flux.</td>
+</tr>
+<tr>
+<td><code>amr.write_ismip6</code></td>
+<td><code>false</code></td>
+<td>Write the extra fields required by ISMIP6: surface and basal temperature, and the drag coefficient. Forces <code>write_base_velocities</code> and <code>write_mask</code> on.</td>
+</tr>
+<tr>
+<td><code>amr.write_map_file</code></td>
+<td><code>false</code></td>
+<td>Write a sigma-mapped AMR hierarchy rather than the standard flattened hierarchy.</td>
+</tr>
+</tbody>
+</table>
+<p>Older input files and documentation use <code>amr.write_fluxVel</code>,
+<code>amr.write_baseVel</code>, and <code>amr.write_viscousTensor</code>. The current code
+reads only the underscore names <code>amr.write_flux_velocities</code>,
+<code>amr.write_base_velocities</code>, and <code>amr.write_viscous_tensor</code>.</p>
+<h2 id="restart-controls">Restart controls</h2>
+<p>Most restart options are described in
+<a href="../io/#checkpoints-chk-2dhdf5-files-and-restarts">input/output</a>. A few
+further options are useful when restarting.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>amr.restart_step</code></td>
+<td>checkpoint value</td>
+<td>Override the step number stored in the checkpoint file. Also sets the step from which checkpoint overwriting is measured.</td>
+</tr>
+<tr>
+<td><code>amr.restart_read_ice_frac</code></td>
+<td><code>true</code> if the checkpoint contains it</td>
+<td>Set to <code>false</code> to ignore the ice area fraction stored in a checkpoint, for backward compatibility with older files.</td>
+</tr>
+<tr>
+<td><code>amr.check_exit</code></td>
+<td><code>false</code></td>
+<td>Exit immediately after writing a checkpoint (except at step zero). Useful for testing checkpoint/restart or for splitting a run into short jobs.</td>
+</tr>
+<tr>
+<td><code>amr.cf_restart_file</code></td>
+<td>empty</td>
+<td>CF-format file to read CF restart data from after loading the AMR checkpoint. If empty, <code>CFIO.imply_restart</code> decides whether the default file name is used.</td>
+</tr>
+<tr>
+<td><code>amr.force_gia_init</code></td>
+<td><code>false</code></td>
+<td>Re-initialise the topography flux (GIA model) after restarting, for example when the checkpoint was written without GIA.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="diagnostics-and-conservation">Diagnostics and conservation</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DomainDiagnosticData.max_err_mass_con</code></td>
+<td><code>-1.0</code> (disabled)</td>
+<td>If positive, abort when the domain-integrated mass-conservation error exceeds this value.</td>
+</tr>
+</tbody>
+</table>
+<p>Several <code>amr.report_*</code> options (<code>report_discharge</code>,
+<code>report_time_interval</code>, <code>report_sum_grounded_ice</code>, <code>report_ice_area</code>,
+<code>report_total_flux</code>, <code>report_calving</code>) are accepted but are currently
+placeholders and have no effect. The domain diagnostics written to CF
+plot files are controlled through the <code>CFIO</code> options described in
+<a href="../io/#cf-plot-files-plot-cf2dhdf5-files">input/output</a>.</p>
+<h2 id="optional-model-components">Optional model components</h2>
+<h3 id="continuum-damage-model">Continuum damage model</h3>
+<p>Setting <code>main.damage_model = true</code> enables the continuum damage model.
+Damage is transported with the ice and reduces the effective viscosity.
+The calving model is wrapped so that heavily damaged floating ice can
+calve.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>damage.shear_alpha</code></td>
+<td><code>-1.0</code> (disabled)</td>
+<td>Coefficient for damage production by shear. Values greater than zero enable the shear source.</td>
+</tr>
+<tr>
+<td><code>damage.shear_critical</code></td>
+<td><code>1.0e-10</code></td>
+<td>Shear threshold below which no shear damage is produced.</td>
+</tr>
+<tr>
+<td><code>damage.water_source.type</code></td>
+<td><code>zeroFlux</code></td>
+<td>A <a href="../surfaceflux/">surface flux</a> providing water to the damage model, e.g. from surface melt. Uses the usual <code>damage.water_source.*</code> options.</td>
+</tr>
+<tr>
+<td><code>damage.critical_damage</code></td>
+<td><code>1.0</code></td>
+<td>Damage threshold used by the damage calving model.</td>
+</tr>
+<tr>
+<td><code>damage.critical_thickness</code></td>
+<td><code>0.0</code></td>
+<td>Additional thickness threshold used by the damage calving model.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="melange-model">Melange model</h3>
+<p>Setting <code>main.melange_model = true</code> enables a melange thickness field
+that receives calved ice and can spread diffusively.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>melange_model.external_source.type</code></td>
+<td><code>zeroFlux</code></td>
+<td>A <a href="../surfaceflux/">surface flux</a> providing the external melange source (or sink), e.g. from an ocean or iceberg model. Uses the usual <code>melange_model.external_source.*</code> options.</td>
+</tr>
+<tr>
+<td><code>melange_model.diffusion_factor</code></td>
+<td><code>0.0</code></td>
+<td>Diffusivity factor for melange transport. Zero disables diffusion.</td>
+</tr>
+<tr>
+<td><code>melange_model.increment_method</code></td>
+<td><code>1</code></td>
+<td>Source method: <code>0</code> increments melange by ice thickness through explicit calls; <code>1</code> uses the thickness removed by calving during the time step.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="additional-surface-flux-types">Additional surface flux types</h2>
+<p>These flux types are documented here because they are not covered by
+<a href="../surfaceflux/">surface fluxes</a>. They can be used anywhere a surface
+flux is expected, e.g. <code>surfaceFlux.type</code>, <code>basalFlux.type</code>, or
+<code>topographyFlux.type</code>.</p>
+<h3 id="targetthicknessflux">targetThicknessFlux</h3>
+<p>Applies a flux that relaxes the ice thickness toward a target field on a
+given timescale. It is useful for idealised spin-up experiments.</p>
+<pre><code>surfaceFlux.type = targetThicknessFlux
+surfaceFlux.timescale = 100.0
+surfaceFlux.target.type = constantFlux
+surfaceFlux.target.flux_value = 500.0
+</code></pre>
+<p><code>timescale</code> is required. The <code>target</code> subsection is itself a surface
+flux.</p>
+<h3 id="floatingdivuhlocalizedflux">FloatingDivUHLocalizedFlux</h3>
+<p>Confines a supplied flux to the floating ice, and scales it by the local
+value of <code>div(uH)</code>. The supplied flux is given in a <code>flux</code> subsection and
+the mesh spacing must be provided.</p>
+<pre><code>basalFlux.type = FloatingDivUHLocalizedFlux
+basalFlux.mesh_spacing = 1000.0
+basalFlux.flux.type = constantFlux
+basalFlux.flux.flux_value = -10.0
+</code></pre>
+<h3 id="ismip6-ocean-forcing">ISMIP6 ocean forcing</h3>
+<p><code>ISMIP6OceanForcing</code> computes a basal melt rate from ISMIP6-style thermal
+forcing and ocean temperature anomaly data. In the current code the type
+name is spelled <code>IMSIP6OceanForcing</code> (without the second <code>I</code>).</p>
+<pre><code>basalFlux.type = IMSIP6OceanForcing
+basalFlux.file_format = thermal_forcing_%4d.nc
+basalFlux.start_year = 1995
+basalFlux.end_year = 2100
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>file_format</code></td>
+<td>required</td>
+<td><code>printf</code>-style format used to build the yearly thermal-forcing file names.</td>
+</tr>
+<tr>
+<td><code>start_year</code></td>
+<td><code>1995</code></td>
+<td>First year of forcing.</td>
+</tr>
+<tr>
+<td><code>end_year</code></td>
+<td><code>2100</code></td>
+<td>Last year of forcing.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>thermal_forcing_0000</code></td>
+<td>Variable name for the thermal forcing.</td>
+</tr>
+<tr>
+<td><code>basin_file</code></td>
+<td>empty</td>
+<td>Optional file containing a basin-number field.</td>
+</tr>
+<tr>
+<td><code>basin_var_name</code></td>
+<td><code>basinNumber</code></td>
+<td>Variable name for the basin numbers.</td>
+</tr>
+<tr>
+<td><code>n_basin</code></td>
+<td><code>16</code></td>
+<td>Number of basins (the IMBIE2 default).</td>
+</tr>
+<tr>
+<td><code>deltaT_specified</code></td>
+<td><code>true</code></td>
+<td>Whether an ocean temperature anomaly is supplied.</td>
+</tr>
+<tr>
+<td><code>deltaT_file</code></td>
+<td>required if <code>deltaT_specified</code></td>
+<td>File containing the temperature anomaly.</td>
+</tr>
+<tr>
+<td><code>deltaT_var_name</code></td>
+<td><code>deltaT_basin</code></td>
+<td>Variable name for the anomaly.</td>
+</tr>
+<tr>
+<td><code>anomaly</code></td>
+<td><code>false</code></td>
+<td>Treat the supplied field as an anomaly.</td>
+</tr>
+<tr>
+<td><code>n_layer</code></td>
+<td><code>30</code></td>
+<td>Number of vertical forcing layers (ISMIP6 default).</td>
+</tr>
+<tr>
+<td><code>dz</code></td>
+<td><code>60.0</code></td>
+<td>Layer spacing in metres (ISMIP6 default).</td>
+</tr>
+<tr>
+<td><code>basin_mean_min_thickness</code></td>
+<td><code>0.0</code></td>
+<td>Minimum thickness used when forming basin means.</td>
+</tr>
+<tr>
+<td><code>local</code></td>
+<td><code>true</code></td>
+<td>Use the local (rather than non-local) melt-rate formula.</td>
+</tr>
+<tr>
+<td><code>local_slope</code></td>
+<td><code>false</code></td>
+<td>Use the local-slope variant.</td>
+</tr>
+<tr>
+<td><code>gamma0</code></td>
+<td>formula default</td>
+<td>Heat-transfer coefficient. Defaults depend on <code>local</code>.</td>
+</tr>
+<tr>
+<td><code>factor</code></td>
+<td>formula default</td>
+<td>Directly set the melt-rate factor, overriding <code>gamma0</code>. Should be negative.</td>
+</tr>
+<tr>
+<td><code>tf_is_source</code></td>
+<td><code>false</code></td>
+<td>Interpret the supplied thermal forcing as a source rather than as ISMIP6 thermal forcing.</td>
+</tr>
+</tbody>
+</table>
+<p>All of these options live under the flux prefix, e.g.
+<code>basalFlux.file_format</code>.</p>
+<h3 id="bueler-gia-topography-flux">Bueler GIA topography flux</h3>
+<p>When built with FFTW support, <code>topographyFlux.type = buelerGIA</code> enables
+the Bueler GIA model. It requires a rectangular, uniformly spaced domain
+covering the whole ice sheet.</p>
+<pre><code>topographyFlux.type = buelerGIA
+topographyFlux.pad = 2
+topographyFlux.nlayers = 1
+topographyFlux.visc = 1.0e+21
+topographyFlux.flex = 1.0e+5
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pad</code></td>
+<td>required</td>
+<td>Number of grid cells added around the domain for the FFT.</td>
+</tr>
+<tr>
+<td><code>inside_box</code></td>
+<td><code>true</code></td>
+<td>Treat the problem domain as a box inside a larger GIA domain.</td>
+</tr>
+<tr>
+<td><code>box_lox</code>, <code>box_hix</code>, <code>box_loy</code>, <code>box_hiy</code></td>
+<td>large values</td>
+<td>Extent of the GIA box in index space.</td>
+</tr>
+<tr>
+<td><code>nlayers</code></td>
+<td>required</td>
+<td>Number of mantle layers; currently only <code>1</code> and <code>2</code> are implemented.</td>
+</tr>
+<tr>
+<td><code>visc</code></td>
+<td>required</td>
+<td>Mantle viscosity (one value for one layer, two for two layers).</td>
+</tr>
+<tr>
+<td><code>thk</code></td>
+<td>required for two layers</td>
+<td>Thickness of the upper layer.</td>
+</tr>
+<tr>
+<td><code>flex</code></td>
+<td>required</td>
+<td>Flexural rigidity.</td>
+</tr>
+<tr>
+<td><code>includeElas</code></td>
+<td><code>false</code></td>
+<td>Include elastic lithosphere effects.</td>
+</tr>
+<tr>
+<td><code>lame1</code>, <code>lame2</code></td>
+<td><code>3.42666e+10</code>, <code>2.66e+10</code></td>
+<td>Lamé parameters used when <code>includeElas</code> is true.</td>
+</tr>
+<tr>
+<td><code>oceanLoad</code></td>
+<td><code>false</code></td>
+<td>Include ocean loading.</td>
+</tr>
+<tr>
+<td><code>ELRA</code></td>
+<td><code>false</code></td>
+<td>Use the ELRA relaxation model.</td>
+</tr>
+<tr>
+<td><code>ELRAtau</code></td>
+<td><code>1.0e+3</code></td>
+<td>ELRA relaxation time, in years.</td>
+</tr>
+<tr>
+<td><code>dt</code></td>
+<td><code>0</code></td>
+<td>GIA time step.</td>
+</tr>
+<tr>
+<td><code>init</code></td>
+<td><code>false</code></td>
+<td>Initialise the GIA model from a supplied uplift field.</td>
+</tr>
+<tr>
+<td><code>init.file</code>, <code>init.name</code></td>
+<td>required if <code>init</code></td>
+<td>File and variable name for the initial uplift field.</td>
+</tr>
+</tbody>
+</table>
+<p>The Bueler GIA flux uses <code>constants.ice_density</code>, <code>constants.gravity</code>,
+<code>constants.mantle_density</code>, and <code>constants.seaWater_density</code> (note the
+camel-case spelling described above).</p>
+<h2 id="experimental-and-developer-options">Experimental and developer options</h2>
+<p>These options are accepted by the code but are either experimental or
+intended for development and debugging.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bodges.frac_rhs_bodge</code></td>
+<td><code>false</code></td>
+<td>Divide the velocity right-hand side by the ice area fraction. This is an experimental hack to speed up ice in calving zones.</td>
+</tr>
+<tr>
+<td><code>amr.basal_length_scale</code></td>
+<td><code>0.0</code></td>
+<td>Accepted but currently unused.</td>
+</tr>
+<tr>
+<td><code>CalvingModel.preserveSea</code></td>
+<td><code>false</code></td>
+<td>Accepted but currently unused.</td>
+</tr>
+<tr>
+<td><code>CalvingModel.preserveLand</code></td>
+<td><code>false</code></td>
+<td>Accepted but currently unused.</td>
+</tr>
+<tr>
+<td><code>geometry.basalSlope</code></td>
+<td><code>0 0</code></td>
+<td>Read and stored but currently unused.</td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
