@@ -5694,6 +5694,7 @@ AmrIce::implicitThicknessCorrection(Real a_dt,
       
       mgSolver.solve(H, rhs, finestTimestepLevel(), 0,  false);
    
+//writeLevel(H[0]);
       for (int lev=0; lev <= finestTimestepLevel()  ; ++lev)
 	{
 	  const DisjointBoxLayout& levelGrids = m_amrGrids[lev];
@@ -5702,7 +5703,7 @@ AmrIce::implicitThicknessCorrection(Real a_dt,
 	  
 	  for (DataIterator dit(levelGrids); dit.ok(); ++dit)
 	    {
-	      Real maxH_post_diffusion =  (*H[lev])[dit].norm(0,0,1);
+	      Real maxH_post_diffusion =  (*H[lev])[dit].max();
 	      CH_assert( maxH_post_diffusion< HUGE_THICKNESS);
 	      levelCoord_H[dit].copy( (*H[lev])[dit], 0, 0, 1);
 
