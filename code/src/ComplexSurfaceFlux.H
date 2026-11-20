@@ -572,11 +572,12 @@ public:
      @param a_coef the coefficient \f$f_i\f$
      @param a_minWaterDepth set flux to zero in sub-shelf cavities thinner than a_minWaterDepth
    */
-  DepthPowerFlux(const Real a_power, 
-		      const Real a_coef,
+  DepthPowerFlux(const Vector<Real> a_power,
+		      const Vector<Real> a_coef,
 		      const Real a_minWaterDepth = -1.0,
 		      const Real a_thermoclineDepth = 0.0,
-			  const bool a_multiplySqrtWaterDepth = false);
+			  const bool a_multiplySqrtWaterDepth = false,
+			  const int a_nComponents = 1);
 
   ~DepthPowerFlux(){};
 
@@ -588,11 +589,12 @@ public:
   
 
 protected:
-  Real m_power;
-  Real m_coef;
+  Vector<Real> m_power;
+  Vector<Real> m_coef;
   Real m_minWaterDepth;
   Real m_thermoclineDepth;
   bool m_multiplySqrtWaterDepth;
+  int m_nComponents;
 
 private:
    // Disallowed for all the usual reasons

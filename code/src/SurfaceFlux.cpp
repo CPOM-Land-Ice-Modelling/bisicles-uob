@@ -242,10 +242,12 @@ SurfaceFlux* SurfaceFlux::parse(const char* a_prefix)
     }
   else if (type == "depthPowerFlux")
     {
-      Real power = 1;  
-      pp.query("power",power);      
-      Real coef = 0.0;
-      pp.query("coefficient",coef);
+      int nComponents = 1;
+	  pp.query("nComponents",nComponents);
+      Vector<Real> power(nComponents);  
+	  pp.queryarr("power",power,0,power.size());
+      Vector<Real> coef(nComponents);
+	  pp.queryarr("coefficient",coef,0,coef.size());
       Real dmin = -1.0;
       pp.query("minWaterDepth",dmin);
       Real dtc = 0.0;
@@ -253,7 +255,7 @@ SurfaceFlux* SurfaceFlux::parse(const char* a_prefix)
       bool multiplySqrtWaterDepth = false;
       pp.query("multiplySqrtWaterDepth",multiplySqrtWaterDepth);
       
-      DepthPowerFlux* pptr = new DepthPowerFlux(power,coef,dmin,dtc,multiplySqrtWaterDepth);
+      DepthPowerFlux* pptr = new DepthPowerFlux(power,coef,dmin,dtc,multiplySqrtWaterDepth,nComponents);
       ptr = static_cast<SurfaceFlux*>(pptr);
     }
   else if (type == "productFlux")

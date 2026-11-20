@@ -216,7 +216,8 @@ c--------------------------------------------------
       CHF_AUTOMULTIDO[box; i]
 c di = d(CHF_AUTOIX[i])
       di = max(d(CHF_AUTOIX[i])-dtherm,0.0)
-      a(CHF_AUTOIX[i]) = (zero - one) * coef * di**(pow+1.0d-10)
+c      a(CHF_AUTOIX[i]) = (zero - one) * coef * di**(pow+1.0d-10)
+      a(CHF_AUTOIX[i]) = a(CHF_AUTOIX[i]) - coef * di**(pow+1.0d-10)
       
       CHF_ENDDO
 
