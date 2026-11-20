@@ -140,6 +140,22 @@ c--------------------------------------------------
       CHF_ENDDO
       return
       end
+      
+c--------------------------------------------------
+c     Multiply the flux by the square root of water depth
+c--------------------------------------------------
+      subroutine multiplysqrtwaterdepth(CHF_FRA1[flux],
+     &     CHF_CONST_FRA1[depth],
+     &     CHF_BOX[box])
+
+      integer CHF_AUTODECL[i]
+      CHF_AUTOMULTIDO[box; i]
+
+      flux(CHF_AUTOIX[i]) = flux(CHF_AUTOIX[i]) * sqrt(depth(CHF_AUTOIX[i]))
+      
+      CHF_ENDDO
+      return
+      end
 
 c--------------------------------------------------
 c piecewise linear interpolation of a(x) with
@@ -200,7 +216,8 @@ c--------------------------------------------------
       CHF_AUTOMULTIDO[box; i]
 c di = d(CHF_AUTOIX[i])
       di = max(d(CHF_AUTOIX[i])-dtherm,0.0)
-      a(CHF_AUTOIX[i]) = (zero - one) * coef * di**(pow+1.0d-10)
+c      a(CHF_AUTOIX[i]) = (zero - one) * coef * di**(pow+1.0d-10)
+      a(CHF_AUTOIX[i]) = a(CHF_AUTOIX[i]) - coef * di**(pow+1.0d-10)
       
       CHF_ENDDO
 
