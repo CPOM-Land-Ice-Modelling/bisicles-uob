@@ -575,7 +575,8 @@ public:
   DepthPowerFlux(const Real a_power, 
 		      const Real a_coef,
 		      const Real a_minWaterDepth = -1.0,
-		      const Real a_thermoclineDepth = 0.0);
+		      const Real a_thermoclineDepth = 0.0,
+			  const bool a_multiplySqrtWaterDepth = false);
 
   ~DepthPowerFlux(){};
 
@@ -591,6 +592,7 @@ protected:
   Real m_coef;
   Real m_minWaterDepth;
   Real m_thermoclineDepth;
+  bool m_multiplySqrtWaterDepth;
 
 private:
    // Disallowed for all the usual reasons

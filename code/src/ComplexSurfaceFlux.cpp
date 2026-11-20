@@ -759,16 +759,18 @@ void PiecewiseLinearFlux::surfaceThicknessFlux(LevelData<FArrayBox>& a_flux,
 DepthPowerFlux::DepthPowerFlux(const Real a_power, 
 					 const Real a_coef, 
 					 Real a_minWaterDepth, 
-					 Real a_thermoclineDepth)
+					 Real a_thermoclineDepth,
+					 bool a_multiplySqrtWaterDepth)
   :m_power(a_power),m_coef(a_coef),
    m_minWaterDepth(a_minWaterDepth),
-   m_thermoclineDepth(a_thermoclineDepth)
+   m_thermoclineDepth(a_thermoclineDepth),
+   m_multiplySqrtWaterDepth(a_multiplySqrtWaterDepth)
 {
 }
 
 SurfaceFlux* DepthPowerFlux::new_surfaceFlux()
 {
-  return static_cast<SurfaceFlux*>(new DepthPowerFlux(m_power,m_coef,m_minWaterDepth,m_thermoclineDepth));
+  return static_cast<SurfaceFlux*>(new DepthPowerFlux(m_power,m_coef,m_minWaterDepth,m_thermoclineDepth,m_multiplySqrtWaterDepth));
 }
 
 void DepthPowerFlux::surfaceThicknessFlux(LevelData<FArrayBox>& a_flux,
@@ -809,6 +811,22 @@ void DepthPowerFlux::surfaceThicknessFlux(LevelData<FArrayBox>& a_flux,
 	  FORT_ZEROIFLESS(CHF_FRA1(a_flux[dit],0),
 			  CHF_CONST_FRA1(D,0),
 			  CHF_CONST_REAL(m_minWaterDepth),
+			  CHF_BOX(a_flux[dit].box()));
+
+	}       
+      if (m_multiplySqrtWaterDepth)
+	{
+	  
+	  FArrayBox D(a_flux[dit].box(),1);
+	  FORT_WATERDEPTH(CHF_FRA1(D,0),
+			  CHF_CONST_FRA1(levelH[dit],0),
+			  CHF_CONST_FRA1(levelS[dit],0),
+			  CHF_CONST_FRA1(levelR[dit],0),
+			  CHF_BOX(a_flux[dit].box()));
+  
+	  
+	  FORT_MULTIPLYSQRTWATERDEPTH(CHF_FRA1(a_flux[dit],0),
+			  CHF_CONST_FRA1(D,0),
 			  CHF_BOX(a_flux[dit].box()));
 
 	}

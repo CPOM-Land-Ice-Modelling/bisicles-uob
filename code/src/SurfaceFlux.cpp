@@ -250,8 +250,10 @@ SurfaceFlux* SurfaceFlux::parse(const char* a_prefix)
       pp.query("minWaterDepth",dmin);
       Real dtc = 0.0;
       pp.query("thermoclineDepth",dtc);
+      bool multiplySqrtWaterDepth = false;
+      pp.query("multiplySqrtWaterDepth",multiplySqrtWaterDepth);
       
-      DepthPowerFlux* pptr = new DepthPowerFlux(power,coef,dmin,dtc);
+      DepthPowerFlux* pptr = new DepthPowerFlux(power,coef,dmin,dtc,multiplySqrtWaterDepth);
       ptr = static_cast<SurfaceFlux*>(pptr);
     }
   else if (type == "productFlux")
