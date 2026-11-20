@@ -1,0 +1,151 @@
+#time-dependent regression test, tests checkpoint
+amr.verbosity = 5
+
+geometry.problem_type = LevelData
+geometry.beta_type = LevelData
+
+inputLevelData.geometryFile = ../ASE-control/asebm2-geometry-4km.2d.H5
+inputLevelData.thicknessName = thk
+inputLevelData.topographyName = topg
+
+inputLevelData.frictionFile = ../ASE-control/asebm2-ctrldata-4km.2d.H5
+inputLevelData.frictionName = btrc
+inputLevelData.xvelName = umod
+inputLevelData.velcoefName = umodc
+
+temperature.type = constant
+temperature.value = 260.0
+
+#bulk constitutive relation and parameters
+main.constitutiveRelation = L1L2
+main.rateFactor = arrheniusRate
+ArrheniusRate.epsSqr0 = 1.0e-12
+
+#basal friction relation parameters
+main.basalFrictionRelation = powerLaw
+BasalFrictionPowerLaw.m = 1.0
+
+
+constants.ice_density=918
+
+#JFNK parameters
+JFNKSolver.vtopSafety = 0.95
+JFNKSolver.minPicardIterations = 3
+JFNKSolver.maxIter = 4
+JFNKSolver.absTol = 1.0e-4
+JFNKSolver.relTol = 1.0e-8
+JFNKSolver.solverType = 0 #Relax solver
+JFNKSolver.RelaxRelTol = 1.0e-3
+JFNKSolver.RelaxHang = 0.25
+JFNKSolver.maxRelaxIter = 20
+JFNKSolver.normType = 0
+JFNKSolver.verbosity = 5
+JFNKSolver.vtopRelaxTol = 0.005
+JFNKSolver.vtopRelaxMinIter = 4
+JFNKSolver.numMGSmooth = 8
+JFNKSolver.numMGIter = 1
+JFNKSolver.h = 0.025
+JFNKSolver.switchRate = 5.0
+#JFNKSolver.writeResiduals = true
+JFNKSolver.lazyGSRB = false
+
+#domain details
+main.domain_size = 768.0e+3 896.0e+3 1.0e+3
+
+amr.sigma = 0.0 0.1663 0.3179 0.4547 0.5768 0.6842 0.7768 0.8547 0.9179 0.9663 1.0000
+amr.is_periodic = 0 0 0
+amr.num_cells = 48 56 10
+L1L2.layerCoarsening=99
+amr.max_box_size = 64
+amr.maxLevel = 2
+amr.ref_ratio = 2 2 2 2 2 2 
+amr.blockFactor = 8          # block factor used in grid generation
+amr.fill_ratio = 0.8          # how efficient are the grids
+amr.nesting_radius = 1        # proper nesting radius required
+amr.tags_grow = 1            # amount to buffer tags
+amr.max_vel_dx = 1.0e+6
+amr.regrid_interval = 1
+
+#time stepping
+main.maxTime = 1000  # maximum time to run to
+main.maxStep = 999   # maximum number of steps to runx
+amr.temporal_accuracy = 1
+amr.cfl = 0.25  
+amr.initial_cfl = 0.25
+amr.time_step_ticks = true
+
+#mesh refinement criteria
+amr.tag_on_grounded_laplacian_velocity = 0 
+amr.lap_vel_tagging_val = 30
+
+amr.tag_grounding_line = 1
+amr.grounding_line_tagging_min_vel = 20
+
+amr.velocity_solver_type = 1 
+
+regression.result_hdf5 = plot.cf_regression.000008.CF.2d.hdf5
+regression.reference_hdf5 = plot.cf_regression.000008.CF.2d.H5
+regression.tol = 1.0e-5
+regression.diff_hdf5 = plot.cf_regression.diff.CF.2d.hdf5
+
+amr.plot_time_interval = 1
+amr.plot_style_amr = false
+amr.plot_style_cf = true
+amr.plot_prefix = plot.cf_regression.
+
+amr.check_prefix = chk.cf_regression.
+amr.check_interval = 4
+amr.check_overwrite = false
+amr.restart_file = chk.cf_regression.000005.2d.H5
+amr.cf_restart_file = chk.cf_regression.000005.CF.2d.H5
+
+CFIO.level = 1
+CFIO.lithk = true
+CFIO.lithk.time_integration = 1
+CFIO.orog = true
+CFIO.acabf = true
+CFIO.libmassbf = true
+CFIO.libmassbffl = true
+CFIO.libmassbfgr = true
+CFIO.licalvf = true
+CFIO.ligroundf = true
+CFIO.dlithkdt = true
+CFIO.sftgif = true
+CFIO.sftgrf = true
+CFIO.sftflf = true
+CFIO.checkpoint_strict = true
+#CFIO.imply_restart = true
+
+
+# this looks a bit odd, but allows a regression test for maskedFLux
+surfaceFlux.type =  maskedFlux
+surfaceFlux.grounded.type = constantFlux
+surfaceFlux.grounded.flux_value = 0.31
+surfaceFlux.floating.type = constantFlux
+surfaceFlux.floating.flux_value = 0.29
+
+# regression test for conservedIceShelfFlux
+basalFlux.type = conservedSumIceShelfFlux
+basalFlux.flux.type = LevelData
+basalFlux.flux.n = 1
+basalFlux.flux.fileFormat = coarse_bmb.2d.H5
+basalFlux.flux.name = bmb
+basalFlux.known_sum = -1e-10
+# compute ocean connection
+geometry.compute_ocean_connection_iter = 4
+
+CalvingModel.type = CriterionToRateCalvingModel
+CalvingModel.calving_rate = 10.0e+3
+CalvingModel.CriterionCalvingModel.type = BennCalvingModel
+CalvingModel.CriterionCalvingModel.factor.type = constantFlux
+CalvingModel.CriterionCalvingModel.factor.flux_value = 3.0
+CalvingModel.CriterionCalvingModel.waterDepth = 0.0 
+amr.evolve_ice_frac_2 = true
+
+amr.plot_style_cf = false
+amr.plot_interval = 1
+amr.plot_style_amr = true
+amr.eliminate_remote_ice = true
+amr.eliminate_remote_ice_tol = 10.0
+amr.write_thickness_sources = true
+amr.write_mask = true
